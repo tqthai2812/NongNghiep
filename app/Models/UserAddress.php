@@ -6,14 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserAddress extends Model
 {
-    protected $primaryKey = 'address_id';
-
     protected $fillable = [
         'user_id',
         'receiver_name',
         'receiver_phone',
         'address_detail',
-        'is_default',
+        'is_default'
     ];
 
     protected $casts = [
@@ -22,6 +20,6 @@ class UserAddress extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

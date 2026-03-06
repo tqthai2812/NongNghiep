@@ -12,15 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id('order_id');
-            $table->foreignId('user_id')
-                ->constrained('users', 'user_id');
-
-            $table->foreignId('delivery_method_id')
-                ->constrained('delivery_methods', 'delivery_method_id');
-
-            $table->decimal('total_price', 12, 2);
-            $table->string('status')->default('pending');
+            $table->id();
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('delivery_method_id')->constrained('delivery_methods');
+            $table->decimal('total_price', 15, 2);
+            $table->string('status')->default('pending')->comment('pending, shipping, completed, cancelled');
             $table->text('shipping_address');
             $table->timestamps();
         });

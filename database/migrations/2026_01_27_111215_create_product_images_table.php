@@ -12,11 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_images', function (Blueprint $table) {
-            $table->id('image_id');
-            $table->foreignId('product_id')
-                ->constrained('products', 'product_id')
-                ->cascadeOnDelete();
-
+            $table->id();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('image_url');
             $table->boolean('is_primary')->default(false);
             $table->integer('sort_order')->default(0);

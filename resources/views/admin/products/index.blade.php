@@ -64,9 +64,10 @@
         <div class="card card-plain">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mt-0 text-dark fw-bold">Danh Sách Sản Phẩm Tại Cửa Hàng</h4>
-                <button class="btn btn-success d-flex align-items-center">
-                    <i class="material-icons me-1">add</i> Thêm sản phẩm
-                </button>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-success d-flex align-items-center">
+                    <i class="material-icons me-1">add</i>
+                    Thêm sản phẩm
+                </a>
             </div>
 
             <div class="card-body">
@@ -93,7 +94,6 @@
                     <table id="productTable" class="table table-hover align-middle">
                         <thead class="text-secondary bg-light">
                             <tr>
-                                <th style="width: 40px">#</th>
                                 <th>Tên sản phẩm / Phân loại</th>
                                 <th class="text-center">Doanh số</th>
                                 <th class="text-center">Giá bán</th>
@@ -102,100 +102,51 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach ($products as $product)
                             <tr class="table-light fw-bold">
-                                <td>23</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/50" class="product-img me-3">
+                                        <img style="width: 100px; height: 100px; object-fit: cover; border-radius: 30%;" src="{{ asset('storage/' . $product->primaryImage?->image_url ?? 'https://via.placeholder.com/50') }}" class="product-img me-3">
                                         <div>
-                                            Áo mưa TAKIMI unisex dáng dài vải kaki cao cấp...
-                                            <div class="text-muted small fw-normal mt-1">ID Sản phẩm: 27753607395</div>
+                                            {{ $product->name }}
+                                            <div class="text-muted small fw-normal mt-1">ID Sản phẩm: {{ $product->id }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center">6k</td>
+                                <td class="text-center">{{ number_format($product->packageTypes->flatMap->packages->min('price')) }}</td>
+                                <td class="text-center">{{ $product->packageTypes->flatMap->packages->sum('stock') }}</td>
                                 <td class="table-actions text-end">
-                                    <a href="#" class="text-primary"><i class="material-icons">edit</i></a>
-                                    <a href="#" class="text-danger"><i class="material-icons">delete_outline</i></a>
+                                    <a href="{{ route('admin.products.edit', $product->id) }}" class="text-primary"><i class="material-icons">edit</i></a>
+                                    <form action="{{ route('admin.products.destroy', $product->id) }}"
+                                        method="POST"
+                                        style="display: inline-block;"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-danger" style="background: none; border: none; padding: 0;">
+                                            <i class="material-icons">delete_outline</i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
 
+                            @foreach ($product->packageTypes as $packageType)
+                            @foreach ($packageType->packages as $package)
                             <tr class="variant-row">
-                                <td></td>
                                 <td class="ps-5">
                                     <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/35" class="package-img me-2">
-                                        <span>Be, M (Bao 10kg)</span>
+                                        <span>{{ $packageType->type_name }} - {{ $package->size }} {{ $package->unit }}</span>
                                     </div>
                                 </td>
                                 <td class="text-center text-muted">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center text-muted">1k</td>
+                                <td class="text-center">₫{{ number_format($package->price, 0, ',', '.') }}</td>
+                                <td class="text-center text-muted">{{ $package->stock }}</td>
                                 <td class="text-end"></td>
                             </tr>
-                            <tr class="variant-row">
-                                <td></td>
-                                <td class="ps-5">
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/35" class="package-img me-2">
-                                        <span>Be, L (Bao 25kg)</span>
-                                    </div>
-                                </td>
-                                <td class="text-center text-muted">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center text-muted">2k</td>
-                                <td class="text-end"></td>
-                            </tr>
-
-                            <tr class="table-light fw-bold">
-                                <td>23</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/50" class="product-img me-3">
-                                        <div>
-                                            Áo mưa TAKIMI unisex dáng dài vải kaki cao cấp...
-                                            <div class="text-muted small fw-normal mt-1">ID Sản phẩm: 27753607395</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center">6k</td>
-                                <td class="table-actions text-end">
-                                    <a href="#" class="text-primary"><i class="material-icons">edit</i></a>
-                                    <a href="#" class="text-danger"><i class="material-icons">delete_outline</i></a>
-                                </td>
-                            </tr>
-
-                            <tr class="variant-row">
-                                <td></td>
-                                <td class="ps-5">
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/35" class="package-img me-2">
-                                        <span>Be, M (Bao 10kg)</span>
-                                    </div>
-                                </td>
-                                <td class="text-center text-muted">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center text-muted">1k</td>
-                                <td class="text-end"></td>
-                            </tr>
-                            <tr class="variant-row border-bottom">
-                                <td></td>
-                                <td class="ps-5">
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://via.placeholder.com/35" class="package-img me-2">
-                                        <span>Be, L (Bao 25kg)</span>
-                                    </div>
-                                </td>
-                                <td class="text-center text-muted">0</td>
-                                <td class="text-center">₫399.000</td>
-                                <td class="text-center text-muted">2k</td>
-                                <td class="text-end"></td>
-                            </tr>
-
+                            @endforeach
+                            @endforeach
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

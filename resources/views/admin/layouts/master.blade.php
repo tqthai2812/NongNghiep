@@ -50,6 +50,42 @@
         .navbar-nav .material-icons {
             margin-right: 5px;
         }
+
+        .logout-hover {
+            position: relative;
+        }
+
+        .logout-box {
+            position: absolute;
+            top: 42px;
+            right: 0;
+            background: #fff;
+            min-width: 120px;
+            border-radius: 6px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+            display: none;
+            z-index: 999;
+        }
+
+        .logout-box button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 14px;
+            color: #dc3545;
+            cursor: pointer;
+        }
+
+        .logout-box button:hover {
+            background: #f8f9fa;
+        }
+
+        /* HOVER để hiện */
+        .logout-hover:hover .logout-box {
+            display: block;
+        }
     </style>
     @stack('styles')
 </head>
@@ -113,9 +149,8 @@
                     <a href="#pageSubmenu3" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <i class="material-icons">equalizer</i><span>Danh mục</span></a>
                     <ul class="collapse list-unstyled menu" id="pageSubmenu3">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
+                        <li><a href="{{ route('admin.categories.index') }}">Tất cả danh mục</a></li>
+                        <li><a href="{{ route('admin.categories.create') }}">Thêm danh mục</a></li>
                     </ul>
                 </li>
 
@@ -210,6 +245,19 @@
                                         <span class="material-icons">person</span>
                                     </a>
                                 </li>
+                                <li class="nav-item logout-hover position-relative">
+                                    <a class="nav-link" href="javascript:void(0)">
+                                        <span class="material-icons">person</span>
+                                    </a>
+
+                                    <div class="logout-box">
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit">Đăng xuất</button>
+                                        </form>
+                                    </div>
+                                </li>
+
                                 <li class="nav-item">
                                     <a class="nav-link" href="#">
                                         <span class="material-icons">settings</span>
@@ -221,7 +269,7 @@
                 </nav>
             </div>
 
-            <div class="main-content">
+            <div class="main-content" style="min-height: 92vh;">
                 @yield('content')
                 <footer class="footer">
                     <div class="container-fluid">

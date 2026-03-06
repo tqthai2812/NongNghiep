@@ -387,11 +387,22 @@
 </style>
 @endpush
 @section('content')
-<form action="#" method="POST">
+<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
     <div class="row">
         <div class="col-md-12">
             <div class="card p-4">
                 <h4 class="card-title mb-4">Thông tin cơ bản</h4>
+
+                @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
 
                 <div class="form-row">
                     <div class="input-group-text">
@@ -400,7 +411,7 @@
                     <div class="form-floating flex-grow-1">
                         <div class="image-list" id="imageContainer">
                             <div class="image-box" onclick="triggerUpload(this)">
-                                <input type="file" accept="image/*" hidden onchange="handleUpload(event, this)">
+                                <input type="file" name="images[]" accept="image/*" hidden onchange="handleUpload(event, this)">
                                 <span>
                                     <span class="material-icons">add_photo_alternate</span><br>
                                     Thêm ảnh
@@ -419,7 +430,7 @@
                         <span class="required-star">*</span>Tên sản phẩm
                     </div>
                     <div class="form-floating flex-grow-1">
-                        <input type="text" class="form-control" id="productName" placeholder="Tên sản phẩm + Thương hiệu + Model">
+                        <input name="name" type="text" class="form-control" id="productName" placeholder="Tên sản phẩm + Thương hiệu + Model">
                         <label for="productName">Tên sản phẩm + Thương hiệu + Model + Thông số kỹ thuật</label>
                     </div>
                 </div>
@@ -430,6 +441,7 @@
                     </div>
                     <div class="form-floating flex-grow-1">
                         <textarea
+                            name="description"
                             class="form-control auto-expand"
                             id="productDescription"
                             placeholder="Mô tả sản phẩm"
@@ -451,7 +463,7 @@
                                 <span class="required-star">*</span>Thương hiệu
                             </div>
                             <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control" id="brandName" placeholder="Tên thương hiệu">
+                                <input name="brand" type="text" class="form-control" id="brandName" placeholder="Tên thương hiệu">
                                 <label for="brandName">Thương hiệu</label>
                             </div>
                         </div>
@@ -463,12 +475,11 @@
                                 <span class="required-star">*</span>Danh mục
                             </div>
                             <div class="form-floating flex-grow-1">
-                                <select class="form-select material-select" id="categorySelect" aria-label="Chọn ngành hàng">
+                                <select class="form-select material-select" id="categorySelect" name="category_id" aria-label="Chọn ngành hàng">
                                     <option value="" selected disabled hidden></option>
-                                    <option value="1">Thiết bị điện tử</option>
-                                    <option value="2">Thời trang & Phụ kiện</option>
-                                    <option value="3">Mỹ phẩm & Làm đẹp</option>
-                                    <option value="4">Sức khỏe & Đời sống</option>
+                                    @foreach($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
                                 </select>
                                 <label for="categorySelect">Chọn ngành hàng phù hợp</label>
                             </div>
@@ -492,9 +503,15 @@
                         <div class="variant-box">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="form-floating flex-grow-1" style="display: flex;">
-                                    <input type="text" id="groupTitleInput" class="variant-title-input form-control" value=""
+                                    <input type="text" name="package_type_name" id="groupTitleInput" class="variant-title-input form-control" value=""
                                         oninput="updateTableHeader()" placeholder="Tên phân loại">
                                     <label for="groupTitleInput">Tên phân loại</label>
+                                </div>
+
+                                <div class="form-floating flex-grow-1" style="display: flex;">
+                                    <input type="text" name="package_type_unit" id="groupTitleInput2" class="variant-title-input form-control" value=""
+                                        placeholder="Đơn vị tính">
+                                    <label for="groupTitleInput2">Đơn vị tính</label>
                                 </div>
 
                             </div>
@@ -502,7 +519,7 @@
                                 <div class="col-md-6">
                                     <div class="variant-item">
                                         <!-- <i class="bi bi-image text-danger me-2"></i> -->
-                                        <input type="text" class="inner-input variant-input" placeholder="Nhập giá trị"
+                                        <input type="text" name="packages_size[]" class="inner-input variant-input" placeholder="Nhập giá trị"
                                             oninput="updateTable(); checkNewField(this)">
                                         <span class="text-muted small ms-auto char-count">0/20</span>
                                         <i class="bi bi-trash ms-2 text-muted" onclick="removeField(this)"
@@ -570,15 +587,24 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
-            const box = input.parentElement;
-            box.onclick = null;
 
-            box.innerHTML = `
-      <img src="${e.target.result}">
-      <div class="delete-btn" onclick="removeImage(event, this)">
-        <span class="material-icons">close</span>
-      </div>
-    `;
+            const box = input.parentElement;
+
+            // Ẩn span thêm ảnh
+            const span = box.querySelector('span');
+            if (span) span.style.display = 'none';
+
+            // Tạo img
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            box.appendChild(img);
+
+            // Tạo nút xoá
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '<span class="material-icons">close</span>';
+            deleteBtn.onclick = (ev) => removeImage(ev, deleteBtn);
+            box.appendChild(deleteBtn);
 
             if (!document.querySelector('.cover-badge')) {
                 const badge = document.createElement('div');
@@ -589,6 +615,7 @@
 
             addNewUploadBox();
         };
+
         reader.readAsDataURL(file);
     }
 
@@ -606,7 +633,7 @@
         box.onclick = () => triggerUpload(box);
 
         box.innerHTML = `
-    <input type="file" accept="image/*" hidden onchange="handleUpload(event, this)">
+    <input name="images[]" type="file" accept="image/*" hidden onchange="handleUpload(event, this)">
     <span>
       <span class="material-icons">add_photo_alternate</span><br>
       Thêm ảnh
@@ -669,7 +696,7 @@
             newCol.className = 'col-md-6';
             newCol.innerHTML = `
                 <div class="variant-item">
-                    <input type="text" class="inner-input variant-input" placeholder="Nhập" oninput="updateTable(); checkNewField(this)">
+                    <input name="packages_size[]" type="text" class="inner-input variant-input" placeholder="Nhập" oninput="updateTable(); checkNewField(this)">
                     <span class="text-muted small ms-auto char-count">0/20</span>
                     <i class="bi bi-trash ms-2 text-muted" onclick="removeField(this)" style="cursor:pointer"></i>
                 </div>`;
@@ -711,15 +738,15 @@
             const row = document.createElement('tr');
             row.setAttribute('data-key', val);
             row.innerHTML = `
-                <td class="text-center fw-medium">${val}</td>
+                <td class="text-center fw-medium">${val}<input type="hidden" name="packages[${val}][size]" value="${val}"></td>
                 <td>
                     <div class="currency-input">
                         <span>₫</span>
-                        <input type="number" class="row-price" placeholder="Nhập vào" value="${oldData[val]?.price || ''}">
+                        <input type="number" name="packages[${val}][price]" class="row-price" placeholder="Nhập vào" value="${oldData[val]?.price || ''}">
                     </div>
                 </td>
                 <td>
-                    <input type="number" class="input-table row-stock" placeholder="0" value="${oldData[val]?.stock || '0'}">
+                    <input type="number" name="packages[${val}][stock]" class="input-table row-stock" placeholder="0" value="${oldData[val]?.stock || '0'}">
                 </td>
             `;
             tableBody.appendChild(row);

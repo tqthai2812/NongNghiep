@@ -6,22 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoryTransaction extends Model
 {
-    protected $primaryKey = 'transaction_id';
-
-    protected $fillable = [
-        'package_id',
-        'user_id',
-        'type', // in, out, adjust
-        'quantity',
-        'reason',
-    ];
+    protected $fillable = ['package_id', 'user_id', 'type', 'quantity', 'reason'];
 
     public function package()
     {
-        return $this->belongsTo(ProductPackage::class, 'package_id');
+        return $this->belongsTo(ProductPackage::class);
     }
 
-    public function user() // Admin thực hiện
+    // Người thực hiện giao dịch (Admin)
+    public function admin()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

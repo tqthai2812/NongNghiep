@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('delivery_methods', function (Blueprint $table) {
-            $table->id('delivery_method_id');
-            $table->string('name');
-            $table->decimal('cost', 12, 2)->default(0);
+            $table->id();
+            $table->string('name')->comment('Chuyển phát nhanh, Xe tải shop, Chành xe');
+            $table->decimal('cost', 15, 2)->default(0);
             $table->string('description')->nullable();
             $table->timestamps();
         });

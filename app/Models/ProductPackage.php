@@ -6,40 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductPackage extends Model
 {
-    protected $primaryKey = 'package_id';
+    protected $fillable = ['package_type_id', 'size', 'unit', 'price', 'stock'];
 
-    protected $fillable = [
-        'package_type_id',
-        'size',
-        'unit',
-        'price',
-        'stock',
-    ];
-
-    protected $casts = [
-        'size' => 'decimal:2',
-        'price' => 'decimal:2',
-    ];
-
-    public function type()
+    public function packageType()
     {
         return $this->belongsTo(ProductPackageType::class, 'package_type_id');
     }
 
-    // Lấy tên sản phẩm cha (VD: "Phân bón NPK")
-    public function getProductNameAttribute()
+    // Một trick nhỏ để lấy ngược lại Product cha từ gói con
+    public function getProductAttribute()
     {
-        return $this->type->product->name ?? 'Unknown Product';
+        return $this->packageType->product ?? null;
     }
 
-    // Lấy tên đầy đủ (VD: "Phân bón NPK - Bao 10kg")
+    // Sử dụng: $package->full_name
     public function getFullNameAttribute()
     {
-        $productName = $this->type->product->name ?? '';
-        $typeName = $this->type->type_name ?? '';
-        // Format size kiểu 10kg hoặc 1 lít
-        $sizeInfo = floatval($this->size) . ' ' . $this->unit;
+        // Load relationship nếu chưa có để tránh lỗi
+        $this->loadMissing(['packageType.product']);
 
-        return "{$productName} ({$typeName} {$sizeInfo})";
+        $productName = $this->packageType->product->name ?? 'Unknown Product';
+        $typeName = $this->packageType->type_name ?? '';
+        $sizeUnit = $this->size . ' ' . $this->unit;
+
+        return "{$productName} - {$typeName} {$sizeUnit}";
     }
 }

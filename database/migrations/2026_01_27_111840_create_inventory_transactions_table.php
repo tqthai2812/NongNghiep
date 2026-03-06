@@ -12,16 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inventory_transactions', function (Blueprint $table) {
-            $table->id('transaction_id');
-            $table->foreignId('package_id')
-                ->constrained('product_packages', 'package_id');
-
-            $table->foreignId('user_id')
-                ->nullable()
-                ->constrained('users', 'user_id');
-
-            $table->string('type'); // in, out, adjust
-            $table->integer('quantity');
+            $table->id();
+            $table->foreignId('package_id')->constrained('product_packages');
+            $table->foreignId('user_id')->nullable()->constrained('users')->comment('Admin thực hiện');
+            $table->string('type')->comment('in, out, adjust');
+            $table->integer('quantity')->comment('+50 hoặc -10');
             $table->string('reason')->nullable();
             $table->timestamps();
         });

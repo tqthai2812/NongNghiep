@@ -12,14 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_packages', function (Blueprint $table) {
-            $table->id('package_id');
-            $table->foreignId('package_type_id')
-                ->constrained('product_package_types', 'package_type_id')
-                ->cascadeOnDelete();
-
-            $table->decimal('size', 8, 2);
-            $table->string('unit');
-            $table->decimal('price', 12, 2);
+            $table->id();
+            $table->foreignId('package_type_id')->constrained('product_package_types')->onDelete('cascade');
+            $table->decimal('size', 10, 2)->comment('10, 15, 0.5...');
+            $table->string('unit')->comment('kg, lít, gram');
+            $table->decimal('price', 15, 2);
             $table->integer('stock')->default(0);
             $table->timestamps();
         });
