@@ -10,8 +10,15 @@ class UserAddress extends Model
         'user_id',
         'receiver_name',
         'receiver_phone',
+        'province',
+        'district',
+        'ward',
+        'province_id',
+        'district_id',
+        'ward_id',
         'address_detail',
-        'is_default'
+        'address_type',
+        'is_default',
     ];
 
     protected $casts = [

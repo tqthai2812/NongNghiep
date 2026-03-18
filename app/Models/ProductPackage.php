@@ -31,4 +31,16 @@ class ProductPackage extends Model
 
         return "{$productName} - {$typeName} {$sizeUnit}";
     }
+
+    public function product()
+    {
+        // Giả sử khóa ngoại trong bảng product_packages là product_id
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    // Thêm relationship này để lấy danh sách đánh giá của gói sản phẩm
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class, 'package_id');
+    }
 }

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreProductRequest;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use App\Models\InventoryTransaction; // Import model InventoryTransaction
+use Illuminate\Support\Facades\Auth; // Import Auth để lấy ID người dùng hiện tại
 
 class ProductController extends Controller
 {
@@ -86,6 +88,7 @@ class ProductController extends Controller
 
             // 4️⃣ Tạo packages (size + price + stock)
             foreach ($request->packages as $packageData) {
+                $stockInitial = $packageData['stock'] ?? 0;
 
                 $packageType->packages()->create([
                     'size' => $packageData['size'],
@@ -93,6 +96,16 @@ class ProductController extends Controller
                     'price' => $packageData['price'] ?? 0,
                     'stock' => $packageData['stock'] ?? 0,
                 ]);
+
+                if ($stockInitial > 0) {
+                    InventoryTransaction::create([
+                        'package_id' => $packageType->packages()->latest()->first()->id,
+                        'user_id'    => Auth::id(),
+                        'type'       => 'in',
+                        'quantity'   => $stockInitial,
+                        'reason'     => 'Khởi tạo sản phẩm mới',
+                    ]);
+                }
             }
 
             DB::commit();
@@ -137,8 +150,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         DB::transaction(function () use ($request, $product) {
-
-            // Update product
+            // 1. Cập nhật thông tin cơ bản Product
             $product->update([
                 'name' => $request->name,
                 'brand' => $request->brand,
@@ -146,23 +158,17 @@ class ProductController extends Controller
                 'category_id' => $request->category_id,
             ]);
 
-            // ===== UPDATE IMAGES =====
+            // 2. Xử lý hình ảnh (Giữ nguyên logic của bạn)
             $oldImageIds = $request->old_images ?? [];
-
-            $product->images()
-                ->whereNotIn('id', $oldImageIds)
-                ->get()
-                ->each(function ($img) {
-                    Storage::disk('public')->delete($img->image_url);
-                    $img->delete();
-                });
+            $product->images()->whereNotIn('id', $oldImageIds)->get()->each(function ($img) {
+                Storage::disk('public')->delete($img->image_url);
+                $img->delete();
+            });
 
             if ($request->hasFile('images')) {
                 $currentCount = $product->images()->count();
-
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('products', 'public');
-
                     $product->images()->create([
                         'image_url' => $path,
                         'is_primary' => $currentCount === 0 && $index === 0,
@@ -171,29 +177,56 @@ class ProductController extends Controller
                 }
             }
 
-            // ===== UPDATE PACKAGE TYPE =====
+            // 3. ===== CẬP NHẬT PACKAGE KHÔNG DÙNG LỆNH DELETE =====
             $packageType = $product->packageTypes()->first();
-
             if (!$packageType) {
-                $packageType = $product->packageTypes()->create([
-                    'type_name' => $request->package_type_name
-                ]);
+                $packageType = $product->packageTypes()->create(['type_name' => $request->package_type_name]);
             } else {
-                $packageType->update([
-                    'type_name' => $request->package_type_name
-                ]);
-                $packageType->packages()->delete();
+                $packageType->update(['type_name' => $request->package_type_name]);
             }
 
             if ($request->packages) {
-                foreach ($request->packages as $pkg) {
-                    $packageType->packages()->create([
-                        'size' => $pkg['size'],
-                        'unit' => $request->package_type_unit,
-                        'price' => $pkg['price'],
-                        'stock' => $pkg['stock']
-                    ]);
+                $keepPackageIds = [];
+
+                foreach ($request->packages as $pkgData) {
+                    $oldPackage = $packageType->packages()->where('size', $pkgData['size'])->first();
+                    $oldStock = $oldPackage ? $oldPackage->stock : 0;
+                    $newStock = $pkgData['stock'] ?? 0;
+                    // Kiểm tra xem package này đã tồn tại chưa dựa trên 'size'
+                    // Hoặc nếu bạn có truyền 'id' của package từ form edit thì dùng ID sẽ chuẩn hơn
+                    $package = $packageType->packages()->updateOrCreate(
+                        ['size' => $pkgData['size']], // Điều kiện tìm kiếm
+                        [
+                            'unit' => $request->package_type_unit,
+                            'price' => $pkgData['price'],
+                            'stock' => $pkgData['stock']
+                        ]
+                    );
+
+                    // Nếu có sự thay đổi về số lượng tồn kho -> Ghi log Adjust
+                    if ($oldStock != $newStock) {
+                        InventoryTransaction::create([
+                            'package_id' => $package->id,
+                            'user_id'    => Auth::id(),
+                            'type'       => 'adjust',
+                            'quantity'   => $newStock - $oldStock, // Số dương là tăng, số âm là giảm
+                            'reason'     => 'Cập nhật sản phẩm (Điều chỉnh thủ công)',
+                        ]);
+                    }
+                    $keepPackageIds[] = $package->id;
                 }
+
+                // Xóa những package cũ không còn nằm trong danh sách cập nhật 
+                // và KHÔNG có trong giỏ hàng (hoặc dùng Soft Delete)
+                $packageType->packages()
+                    ->whereNotIn('id', $keepPackageIds)
+                    ->each(function ($oldPkg) {
+                        // Kiểm tra nếu có trong giỏ hàng thì không xóa, chỉ ẩn hoặc giữ lại
+                        $existsInCart = DB::table('cart')->where('package_id', $oldPkg->id)->exists();
+                        if (!$existsInCart) {
+                            $oldPkg->delete();
+                        }
+                    });
             }
         });
 

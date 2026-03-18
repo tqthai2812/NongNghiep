@@ -53,8 +53,8 @@
                     </ul>
                 </div>
 
-                <form id="search-form" class="border rounded-pill col-9 row bg-body" action="{{-- route('search') --}}" method="GET">
-                    <input id="input_search" class="rounded-pill p-2 col-11 border-0" type="text" name="search" placeholder="Nhập sản phẩm cần tìm" value="{{ request('search') }}" style="outline: none;">
+                <form id="search-form" class="border rounded-pill col-9 row bg-body" action="{{ route('search') }}" method="GET">
+                    <input id="input_search" class="rounded-pill p-2 col-11 border-0" type="text" name="query" placeholder="Nhập sản phẩm cần tìm" value="{{ request()->get('query') }}" style=" outline: none;">
                     <button class="col-1 m-0 border-0 bg-transparent fa-solid fa-magnifying-glass" type="submit"></button>
                 </form>
             </div>
@@ -91,7 +91,7 @@
                     </a>
 
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{-- url('/user/info') --}}">Thông tin</a>
+                        <a class="dropdown-item" href="{{ route('user.profile') }}">Thông tin</a>
                         <a class="dropdown-item" href="{{ route('user.order_history') }}">Lịch sử đơn hàng</a>
                         <a class="dropdown-item"
                             href="{{ route('logout') }}"

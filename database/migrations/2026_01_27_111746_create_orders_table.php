@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('delivery_method_id')->constrained('delivery_methods');
             $table->decimal('total_price', 15, 2);
             $table->string('status')->default('pending')->comment('pending, shipping, completed, cancelled');
             $table->text('shipping_address');
@@ -27,6 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Tắt kiểm tra khóa ngoại
+        Schema::disableForeignKeyConstraints();
+
         Schema::dropIfExists('orders');
+
+        // Bật lại sau khi xong
+        Schema::enableForeignKeyConstraints();
     }
 };

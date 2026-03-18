@@ -345,7 +345,6 @@
             </div>
         </div>
     </section>
-
     <!-- ====== DGT PRODUCT SECTION ====== -->
     <section class="dgt-product-section py-5">
         <div class="container">
@@ -355,127 +354,33 @@
                 <div class="dgt-divider"></div>
             </div>
 
-            <div class="row g-4">
-
+            @foreach($latestProducts->chunk(4) as $chunk)
+            <div class="row g-4 mb-4"> @foreach($chunk as $product)
                 <div class="col-lg-3 col-md-6">
-                    <a href="{{ route('user.test') }}" class="dgt-product-link">
+                    <a href="{{ route('user.product.detail', $product->id) }}" class="dgt-product-link">
                         <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
+                            {{-- Kiểm tra nếu có ảnh primary thì hiện, không thì hiện ảnh mặc định --}}
+                            <img src="{{ $product->primaryImage ? asset('storage/' . $product->primaryImage->image_url) : asset('assets/img/default.png') }}"
+                                class="img-fluid"
+                                alt="{{ $product->name }}">
+
                             <h5 class="dgt-product-title">
-                                PHÂN TRÙN QUẾ CAO CẤP SFARM PB01
+                                {{ mb_strtoupper($product->name) }}
                             </h5>
+
                             <p class="dgt-product-desc">
-                                Sfarm Pb01 là dòng phân trùn quế cao cấp đã được giảm ẩm...
+                                {{ Str::limit($product->description, 100) }}
                             </p>
                         </div>
                     </a>
                 </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                GIÁ THỂ ƯƠM HẠT GIỐNG SFARM
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Giá thể ươm hạt giống từ thương hiệu Sfarm...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                ĐẤT TRỒNG HOA HỒNG SFARM
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Đất trồng hoa hồng Sfarm là hỗn hợp giá thể...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                PHÂN TRÙN QUẾ SFARM PB00
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Dòng phân trùn quế Sfarm Pb00 là phân trùn quế thô...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
+                @endforeach
             </div>
-
-            <div class="row g-4 mt-2">
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                PHÂN TRÙN QUẾ CAO CẤP SFARM PB01
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Sfarm Pb01 là dòng phân trùn quế cao cấp đã được giảm ẩm...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                GIÁ THỂ ƯƠM HẠT GIỐNG SFARM
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Giá thể ươm hạt giống từ thương hiệu Sfarm...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                ĐẤT TRỒNG HOA HỒNG SFARM
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Đất trồng hoa hồng Sfarm là hỗn hợp giá thể...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <a href="#" class="dgt-product-link">
-                        <div class="dgt-product-card">
-                            <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="img-fluid" alt="">
-                            <h5 class="dgt-product-title">
-                                PHÂN TRÙN QUẾ SFARM PB00
-                            </h5>
-                            <p class="dgt-product-desc">
-                                Dòng phân trùn quế Sfarm Pb00 là phân trùn quế thô...
-                            </p>
-                        </div>
-                    </a>
-                </div>
-
-            </div>
+            @endforeach
         </div>
     </section>
+
+    @include('user.components.chat-widget')
 
 </div>
 @endsection

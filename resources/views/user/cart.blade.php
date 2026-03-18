@@ -55,6 +55,46 @@
         margin-top: 20px;
         z-index: 100;
     }
+
+    /* Xử lý hết hàng cho sản phẩm */
+
+    /* Khung chứa ảnh để định vị lớp phủ */
+    .cart-img-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+    }
+
+    /* Lớp phủ hết hàng */
+    .out-of-stock-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        /* Màu tối mờ */
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 4px;
+        text-align: center;
+        text-transform: uppercase;
+        pointer-events: none;
+        /* Không ngăn cản click vào ảnh nếu cần */
+    }
+
+    /* Làm mờ nhẹ item nếu hết hàng (tùy chọn) */
+    .cart-item.out-of-stock {
+        background-color: #f9f9f9;
+    }
+
+    .cart-item.out-of-stock .cart-title {
+        color: #999;
+    }
 </style>
 @endpush
 
@@ -119,149 +159,96 @@
 
         <!-- ITEM 1 -->
 
-        <div class="cart-item d-flex align-items-center p-3 bg-white border-0 rounded-2 mt-3"
-            data-id="1"
-            data-price="109000">
+        @foreach($cartItems as $item)
+        @php
+        $isOutOfStock = $item->package->stock <= 0;
+            @endphp
+
+            <div class="cart-item d-flex align-items-center p-3 bg-white border-0 rounded-2 mt-3 {{ $isOutOfStock ? 'out-of-stock' : '' }}"
+            data-id="{{ $item->id }}"
+            data-price="{{ $item->package->price }}">
 
             <div style="width:40px">
-                <input class="form-check-input item-check" type="checkbox">
+                <input class="form-check-input item-check" type="checkbox" {{ $isOutOfStock ? 'disabled' : '' }}>
             </div>
 
             <div class="d-flex flex-grow-1 align-items-center">
+                <div class="cart-img-wrapper me-3">
+                    <img src="{{ asset('storage/' . ($item->package->product->primaryImage->image_url ?? 'default.png')) }}" class="cart-img">
 
-                <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="cart-img me-3">
+                    @if($isOutOfStock)
+                    <div class="out-of-stock-overlay">Hết hàng</div>
+                    @endif
+                </div>
 
                 <div>
                     <div class="cart-title">
-                        Quần short jean nam chất liệu jean mềm thoáng mát
+                        {{ $item->package->product->name }}
                     </div>
-
                     <div class="cart-variant">
-                        Đen - Size M
+                        {{ $item->package->full_name }}
                     </div>
                 </div>
-
             </div>
 
             <div class="cart-col text-center price">
-                109.000đ
+                {{ number_format($item->package->price, 0, ',', '.') }}₫
             </div>
 
             <div class="cart-col text-center">
-
                 <div class="input-group cart-qty">
-
-                    <button class="btn btn-outline-secondary qty-minus">-</button>
-
+                    <button class="btn btn-outline-secondary qty-minus" {{ $isOutOfStock ? 'disabled' : '' }}>-</button>
                     <input type="text"
                         class="form-control text-center qty-input"
-                        value="1">
-
-                    <button class="btn btn-outline-secondary qty-plus">+</button>
-
+                        value="{{ $isOutOfStock ? 0 : $item->quantity }}"
+                        readonly>
+                    <button class="btn btn-outline-secondary qty-plus" {{ $isOutOfStock ? 'disabled' : '' }}>+</button>
                 </div>
-
             </div>
 
             <div class="cart-col text-danger text-center fw-bold item-total">
-                109.000đ
+                {{ $isOutOfStock ? '0₫' : number_format($item->package->price * $item->quantity, 0, ',', '.') . '₫' }}
             </div>
 
             <div class="cart-col text-center">
                 <a href="#" class="text-danger remove-item">Xóa</a>
             </div>
+    </div>
+    @endforeach
 
-        </div>
 
 
-        <!-- ITEM 2 -->
+    <!-- FOOTER -->
 
-        <div class="cart-item d-flex align-items-center p-3 bg-white border-0 rounded-2 mt-3"
-            data-id="2"
-            data-price="10800">
+    <div class="cart-footer">
 
-            <div style="width:40px">
-                <input class="form-check-input item-check" type="checkbox">
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+                <input class="form-check-input me-2" type="checkbox" id="check-all-footer">
+                Chọn tất cả
             </div>
 
-            <div class="d-flex flex-grow-1 align-items-center">
+            <div class="d-flex align-items-center">
 
-                <img src="{{ asset('assets/img/img_bn/1-400x400.png') }}" class="cart-img me-3">
-
-                <div>
-                    <div class="cart-title">
-                        Hạt giống rau thơm, rau gia vị trồng quanh năm
-                    </div>
-
-                    <div class="cart-variant">
-                        Ly trộn mix màu
-                    </div>
+                <div class="me-4">
+                    Tổng cộng:
+                    <span class="text-danger fs-5 fw-bold" id="cart-total">
+                        0đ
+                    </span>
                 </div>
 
-            </div>
-
-            <div class="cart-col text-center price">
-                10.800đ
-            </div>
-
-            <div class="cart-col text-center">
-
-                <div class="input-group cart-qty">
-
-                    <button class="btn btn-outline-secondary qty-minus">-</button>
-
-                    <input type="text"
-                        class="form-control text-center qty-input"
-                        value="2">
-
-                    <button class="btn btn-outline-secondary qty-plus">+</button>
-
-                </div>
-
-            </div>
-
-            <div class="cart-col text-danger text-center fw-bold item-total">
-                21.600đ
-            </div>
-
-            <div class="cart-col text-center">
-                <a href="#" class="text-danger remove-item">Xóa</a>
-            </div>
-
-        </div>
-
-
-        <!-- FOOTER -->
-
-        <div class="cart-footer">
-
-            <div class="d-flex justify-content-between align-items-center">
-
-                <div>
-                    <input class="form-check-input me-2" type="checkbox" id="check-all-footer">
-                    Chọn tất cả
-                </div>
-
-                <div class="d-flex align-items-center">
-
-                    <div class="me-4">
-                        Tổng cộng:
-                        <span class="text-danger fs-5 fw-bold" id="cart-total">
-                            0đ
-                        </span>
-                    </div>
-
-                    <button class="btn btn-danger px-4">
-                        Mua hàng
-                    </button>
-
-                </div>
+                <button id="btn-checkout" class="btn btn-danger px-4">
+                    Mua hàng
+                </button>
 
             </div>
 
         </div>
 
     </div>
+
+</div>
 </div>
 @endsection
 
@@ -309,42 +296,38 @@
 
 
     document.querySelectorAll(".qty-plus").forEach(btn => {
-
         btn.onclick = function() {
-
             let item = this.closest(".cart-item");
-
             let input = item.querySelector(".qty-input");
+            let cartItemId = item.dataset.id; // Lấy ID của dòng giỏ hàng
 
-            input.value++;
+            input.value++; // Tăng UI
 
-            updateItemTotal(item);
+            updateItemTotal(item); // Cập nhật thành tiền UI
+            updateCartTotal(); // Cập nhật tổng giỏ hàng UI
 
-            updateCartTotal();
-
+            // QUAN TRỌNG: Gửi dữ liệu lên Server
+            syncQuantity(cartItemId, input.value);
         }
-
     });
 
 
     document.querySelectorAll(".qty-minus").forEach(btn => {
-
         btn.onclick = function() {
-
             let item = this.closest(".cart-item");
-
             let input = item.querySelector(".qty-input");
+            let cartItemId = item.dataset.id;
 
             if (input.value > 1) {
-                input.value--;
+                input.value--; // Giảm UI
+
+                updateItemTotal(item);
+                updateCartTotal();
+
+                // QUAN TRỌNG: Gửi dữ liệu lên Server
+                syncQuantity(cartItemId, input.value);
             }
-
-            updateItemTotal(item);
-
-            updateCartTotal();
-
         }
-
     });
 
 
@@ -393,21 +376,100 @@
     };
 
 
+    // Hàm cập nhật số lượng lên Server
+    function syncQuantity(cartItemId, newQty) {
+        fetch("{{ route('cart.update') }}", { // Đường dẫn đến hàm updateQuantity trong Controller
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    id: cartItemId,
+                    quantity: newQty
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    alert(data.message || "Có lỗi xảy ra");
+                    location.reload(); // Nếu lỗi (hết hàng), reload để lấy số lượng đúng
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi kết nối:", err);
+            });
+    }
+
+    // Cập nhật sự kiện nút Xóa
     document.querySelectorAll(".remove-item").forEach(btn => {
-
         btn.onclick = function(e) {
-
             e.preventDefault();
+            if (!confirm("Xác nhận xóa sản phẩm?")) return;
 
-            let item = this.closest(".cart-item");
+            let itemRow = this.closest(".cart-item");
+            let id = itemRow.dataset.id;
 
-            item.remove();
+            fetch(`/cart/delete/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    itemRow.remove();
+                    updateCartTotal();
+                });
+        }
+    });
 
-            updateCartTotal();
+    // Xử lý sự kiện nhấn nút Mua hàng
+    document.getElementById('btn-checkout').addEventListener('click', function(e) {
+        e.preventDefault();
 
+        let selectedCartIds = [];
+
+        // Tìm tất cả các checkbox sản phẩm đang được tích
+        document.querySelectorAll('.item-check:checked').forEach(function(checkbox) {
+            let cartItem = checkbox.closest('.cart-item');
+            // Chỉ lấy những sản phẩm không bị hết hàng
+            if (cartItem && !cartItem.classList.contains('out-of-stock')) {
+                selectedCartIds.push(cartItem.dataset.id);
+            }
+        });
+
+        if (selectedCartIds.length === 0) {
+            alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+            return;
         }
 
+        // Tạo một form ẩn để gửi mảng ID sang trang Checkout bằng phương thức POST
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/checkout'; // Thay đổi đường dẫn này theo route của bạn (VD: route('checkout.index'))
+
+        // Thêm CSRF Token
+        let csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+
+        // Thêm các ID sản phẩm được chọn vào form
+        selectedCartIds.forEach(id => {
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'cart_ids[]';
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit(); // Chuyển hướng sang trang thanh toán
     });
+
+
 
 
     updateCartTotal();

@@ -98,7 +98,7 @@
 
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h3><img src="{{ asset('assets/img/logo.png') }}" class="img-fluid" /><span>Trần Quốc Thái</span></h3>
+                <h3><img src="{{ asset('assets/img/logo.png') }}" class="img-fluid" /><span>{{ Auth::user()->name }}</span></h3>
             </div>
             <ul class="list-unstyled components">
                 <li class="active">
@@ -106,17 +106,6 @@
                 </li>
 
                 <div class="small-screen navbar-display">
-                    <li class="dropdown d-lg-none d-md-block d-xl-none d-sm-block">
-                        <a href="#homeSubmenu0" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                            <i class="material-icons">notifications</i><span> 4 notification</span></a>
-                        <ul class="collapse list-unstyled menu" id="homeSubmenu0">
-                            <li><a href="#">You have 5 new messages</a></li>
-                            <li><a href="#">You're now friend with Mike</a></li>
-                            <li><a href="#">Wish Mary on her birthday!</a></li>
-                            <li><a href="#">5 warnings in Server Console</a></li>
-                        </ul>
-                    </li>
-
                     <li class="d-lg-none d-md-block d-xl-none d-sm-block">
                         <a href="#"><i class="material-icons">person</i><span>user</span></a>
                     </li>
@@ -141,7 +130,6 @@
                     <ul class="collapse list-unstyled menu" id="pageSubmenu2">
                         <li><a href="{{ route('admin.products.index') }}">Tất cả sản phẩm</a></li>
                         <li><a href="{{ route('admin.products.create') }}">Thêm sản phẩm</a></li>
-                        <li><a href="#">Chương trình giảm giá</a></li>
                     </ul>
                 </li>
 
@@ -155,52 +143,10 @@
                 </li>
 
                 <li class="dropdown">
-                    <a href="#pageSubmenu4" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                        <i class="material-icons">extension</i><span>Bài viết</span></a>
-                    <ul class="collapse list-unstyled menu" id="pageSubmenu4">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
-                    </ul>
-                </li>
-
-                <li class="dropdown">
                     <a href="#pageSubmenu5" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <i class="material-icons">border_color</i><span>Đơn hàng</span></a>
                     <ul class="collapse list-unstyled menu" id="pageSubmenu5">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
-                    </ul>
-                </li>
-
-                <li class="dropdown">
-                    <a href="#pageSubmenu6" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                        <i class="material-icons">grid_on</i><span>Nhà cung cấp</span></a>
-                    <ul class="collapse list-unstyled menu" id="pageSubmenu6">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
-                    </ul>
-                </li>
-
-                <li class="dropdown">
-                    <a href="#pageSubmenu7" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                        <i class="material-icons">content_copy</i><span>Phương thức giao hàng</span></a>
-                    <ul class="collapse list-unstyled menu" id="pageSubmenu7">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
-                    </ul>
-                </li>
-
-                <li class="dropdown">
-                    <a href="#pageSubmenu8" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                        <i class="material-icons">content_copy</i><span>Liên hệ và phản hồi</span></a>
-                    <ul class="collapse list-unstyled menu" id="pageSubmenu8">
-                        <li><a href="#">Page 1</a></li>
-                        <li><a href="#">Page 2</a></li>
-                        <li><a href="#">Page 3</a></li>
+                        <li><a href="{{ route('admin.orders.index') }}">Tất cả đơn hàng</a></li>
                     </ul>
                 </li>
 
@@ -228,18 +174,6 @@
                         <div class="collapse navbar-collapse d-lg-block d-xl-block d-sm-none d-md-none d-none"
                             id="navbarSupportedContent">
                             <ul class="nav navbar-nav ms-auto">
-                                <li class="dropdown nav-item active">
-                                    <a href="#" class="nav-link" data-bs-toggle="dropdown">
-                                        <span class="material-icons">notifications</span>
-                                        <span class="notification">4</span>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a href="#" class="dropdown-item">You have 5 new messages</a></li>
-                                        <li><a href="#" class="dropdown-item">You're now friend with Mike</a></li>
-                                        <li><a href="#" class="dropdown-item">Wish Mary on her birthday!</a></li>
-                                        <li><a href="#" class="dropdown-item">5 warnings in Server Console</a></li>
-                                    </ul>
-                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#">
                                         <span class="material-icons">person</span>
@@ -285,8 +219,7 @@
                                 </nav>
                             </div>
                             <div class="col-md-6">
-                                <p class="copyright d-flex justify-content-end"> &copy 2026 Design by
-                                    <a href="#"> Trần Quốc Thái </a> BootStrap Admin Dashboard
+                                <p class="copyright d-flex justify-content-end"> &copy 2026 Design by <a href="#" class="mx-1"> Trần Quốc Thái </a>
                                 </p>
                             </div>
                         </div>

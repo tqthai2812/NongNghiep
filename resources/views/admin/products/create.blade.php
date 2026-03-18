@@ -387,6 +387,23 @@
 </style>
 @endpush
 @section('content')
+@if(session('error'))
+<div style="background-color: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;">
+    <strong>⚠️ Lỗi hệ thống:</strong>
+    <p>{{ session('error') }}</p>
+</div>
+@endif
+
+@if ($errors->any())
+<div style="background-color: #fffbeb; border: 1px solid #f59e0b; color: #92400e; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;">
+    <strong>🛑 Dữ liệu nhập vào chưa đúng:</strong>
+    <ul style="margin-top: 0.5rem; list-style-type: disc; margin-left: 1.5rem;">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
 <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="row">
