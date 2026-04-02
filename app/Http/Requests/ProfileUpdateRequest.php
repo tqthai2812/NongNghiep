@@ -27,4 +27,19 @@ class ProfileUpdateRequest extends FormRequest
             ],
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'name.required' => 'Tên không được để trống.',
+            'name.string' => 'Tên phải là một chuỗi.',
+            'name.max' => 'Tên không được vượt quá 255 ký tự.',
+            'email.required' => 'Email không được để trống.',
+            'email.string' => 'Email phải là một chuỗi.',
+            'email.lowercase' => 'Email phải viết thường.',
+            'email.email' => 'Email phải có định dạng hợp lệ.',
+            'email.max' => 'Email không được vượt quá 255 ký tự.',
+            'email.unique' => 'Email đã tồn tại trong hệ thống.',
+        ];
+    }
 }

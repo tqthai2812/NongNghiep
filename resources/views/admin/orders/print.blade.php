@@ -4,84 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>In Đơn Hàng #{{ $order->id }}</title>
-    <style>
-        /* Sử dụng font DejaVu Sans để không bị lỗi font Tiếng Việt khi xuất PDF */
-        body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 13px;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .header-table {
-            margin-bottom: 30px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: right;
-            text-transform: uppercase;
-        }
-
-        .info-table {
-            margin-bottom: 30px;
-        }
-
-        .info-table td {
-            vertical-align: top;
-            width: 50%;
-        }
-
-        .box-title {
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .items-table th,
-        .items-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .items-table th {
-            background-color: #f5f5f5;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 12px;
-        }
-
-        .text-right {
-            text-align: right !important;
-        }
-
-        .text-center {
-            text-align: center !important;
-        }
-
-        .total-row {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .total-final {
-            font-weight: bold;
-            font-size: 16px;
-            color: #d93025;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ public_path('assets/css/admin/orders/print.css') }}" media="all">
 </head>
 
 <body>
@@ -89,11 +12,11 @@
     <table class="header-table">
         <tr>
             <td>
-                <h3 style="margin: 0; font-size: 18px;">NÔNG NGHIỆP XANH STORE</h3>
+                <h3 style="margin: 0; font-size: 18px;">TRẦN QUỐC THÁI STORE</h3>
                 <p style="margin: 5px 0 0 0; font-size: 12px; color: #555;">
                     Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM<br>
-                    Điện thoại: 0909.123.456<br>
-                    Website: www.nongnghiepxanh.com
+                    Điện thoại: 0399695899<br>
+                    Website: www.tqt.com
                 </p>
             </td>
             <td class="title">

@@ -5,112 +5,67 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
-use Illuminate\Support\Facades\Auth;
-use App\Models\ProductPackage;
-use App\Models\InventoryTransaction;
 use Illuminate\Support\Facades\DB;
-use App\Models\ProductReview;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\SubmitReviewRequest;
+use App\Http\Requests\UpdateProfileRequest;
 
 class ProfileController extends Controller
 {
-    public function index()
-    {
-        return view('user.profile');
-    }
-
     public function orderhistory()
     {
-        $userId = Auth::id();
+        $user = request()->user();
 
         $orders = Order::with([
-            'items.package.product.primaryImage',
-            'items.package.packageType',
+            'items.package.packageType.product.primaryImage', // Load kèm thông tin sản phẩm và ảnh đại diện
             'reviews' // Load kèm review để check xem đã đánh giá chưa
         ])
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('user.order_history', compact('orders'));
     }
 
-    public function submitReview(Request $request)
+    public function submitReview(SubmitReviewRequest $request)
     {
-        $request->validate([
-            'order_id'   => 'required|exists:orders,id',
-            'package_id' => 'required|exists:product_packages,id',
-            'rating'     => 'required|integer|min:1|max:5',
-            'comment'    => 'nullable|string|max:1000',
-        ]);
+        $user = $request->user();
 
-        $userId = Auth::id();
-
-        // Kiểm tra xem đã đánh giá chưa (tránh spam F5)
-        $exists = ProductReview::where('user_id', $userId)
+        // Do Form Request đã check quyền sở hữu đơn hàng, ta chỉ cần check xem đã đánh giá chưa
+        $hasReviewed = $user->reviews()
             ->where('order_id', $request->order_id)
             ->where('package_id', $request->package_id)
             ->exists();
 
-        if ($exists) {
+        if ($hasReviewed) {
             return back()->with('error', 'Bạn đã đánh giá sản phẩm này rồi!');
         }
 
-        // Lưu đánh giá
-        ProductReview::create([
-            'user_id'    => $userId,
-            'order_id'   => $request->order_id,
-            'package_id' => $request->package_id,
-            'rating'     => $request->rating,
-            'comment'    => $request->comment,
-        ]);
+        // Lưu thẳng vào DB
+        $user->reviews()->create($request->validated());
 
         return back()->with('success', 'Cảm ơn bạn đã đánh giá sản phẩm!');
     }
 
     public function cancelOrder(Request $request, $id)
     {
-        $user = Auth::user();
+        // 1. Tìm đơn hàng và eager load sẵn items để tránh N+1 Query
+        $order = Order::with('items')->where('user_id', $request->user()->id)->findOrFail($id);
 
-        // Tìm đơn hàng của user này
-        $order = Order::where('user_id', $user->id)->findOrFail($id);
-
-        // Bảo mật lớp thứ 2: Đảm bảo chỉ đơn 'pending' mới được hủy
+        // 2. Bảo mật: Kiểm tra trạng thái
         if ($order->status !== 'pending') {
             return back()->with('error', 'Không thể hủy đơn hàng ở trạng thái này!');
         }
 
+        // 3. Thực thi logic nghiệp vụ và bọc trong Transaction tự động
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($order, $request) {
+                $order->cancelAndRestock($request->user()->id);
+            });
 
-            // 1. Cập nhật trạng thái đơn hàng thành 'cancelled' (Đã hủy)
-            $order->status = 'cancelled';
-            $order->save();
-
-            // 2. Hoàn lại số lượng sản phẩm vào kho (Restock)
-            // Lấy các chi tiết đơn hàng (Order_Items)
-            foreach ($order->items as $item) {
-                $package = ProductPackage::find($item->package_id);
-                if ($package) {
-                    // Cộng lại số lượng tồn kho
-                    $package->increment('stock', $item->quantity);
-
-                    // Ghi log vào bảng Inventory_Transactions là nhập lại kho
-                    InventoryTransaction::create([
-                        'package_id' => $item->package_id,
-                        'user_id'    => $user->id, // Người thao tác là khách hàng tự hủy
-                        'type'       => 'in',      // Nhập lại vào kho
-                        'quantity'   => $item->quantity, // Số lượng dương (cộng vào)
-                        'reason'     => 'Khách hàng tự hủy đơn #' . $order->id
-                    ]);
-                }
-            }
-
-            DB::commit();
             return back()->with('success', 'Đã hủy đơn hàng thành công!');
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
@@ -120,63 +75,41 @@ class ProfileController extends Controller
         return view('user.profile_edit');
     }
 
-    public function address_edit()
+    public function address_edit(Request $request)
     {
-        $userId = Auth::id();
-
-        // Lấy danh sách địa chỉ của user đang đăng nhập
-        // Sắp xếp: Địa chỉ mặc định (is_default = 1) lên đầu tiên, sau đó sắp xếp theo thời gian tạo mới nhất
-        $addresses = UserAddress::where('user_id', $userId)
-            ->orderBy('is_default', 'desc')
-            ->orderBy('created_at', 'desc')
+        $addresses = UserAddress::where('user_id', $request->user()->id)
+            ->ordered() // Gọi scope đã định nghĩa ở trên
             ->get();
 
         return view('user.address_edit', compact('addresses'));
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        // 1. Validate dữ liệu gửi lên
-        $request->validate([
-            'name'    => 'required|string|max:255',
-            // Rule unique: bỏ qua email của chính user hiện tại
-            'email'        => 'required|email|max:255|unique:users,email,' . $user->id,
-            'phone_number' => 'nullable|string|max:20',
-            // File ảnh: dung lượng tối đa 1024 KB (1MB), định dạng jpeg, png, jpg
-            'avatar'       => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-        ], [
-            'name.required' => 'Vui lòng nhập tên.',
-            'email.required'     => 'Vui lòng nhập email.',
-            'email.unique'       => 'Email này đã được sử dụng.',
-            'avatar.max'         => 'Dung lượng ảnh tối đa là 1MB.',
-            'avatar.image'       => 'File tải lên phải là hình ảnh.',
-        ]);
+        // 1. Lấy dữ liệu đã qua kiểm duyệt (chỉ lấy các trường text)
+        $data = $request->safe()->only(['name', 'email', 'phone_number']);
 
-        // 2. Cập nhật thông tin text
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone_number = $request->phone_number;
-
-        // 3. Xử lý tải ảnh (Avatar)
+        // 2. Xử lý ảnh bằng một hàm riêng (hoặc Service)
         if ($request->hasFile('avatar')) {
-            // (Tùy chọn) Xóa ảnh cũ đi cho nhẹ bộ nhớ nếu không phải ảnh mặc định
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-
-            // Lưu ảnh mới vào thư mục storage/app/public/avatars
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-
-            // Cập nhật đường dẫn vào DB
-            $user->avatar = $avatarPath;
+            $data['avatar'] = $this->uploadAvatar($request->file('avatar'), $user->avatar);
         }
 
-        // 4. Lưu vào Database
-        /** @var \App\Models\User $user */
-        $user->save();
+        // 3. Cập nhật hàng loạt (Mass Assignment)
+        $user->update($data);
 
         return back()->with('success', 'Cập nhật thông tin hồ sơ thành công!');
+    }
+
+    private function uploadAvatar($file, $oldPath): string
+    {
+        if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $filename = time() . '_' . $file->getClientOriginalName();
+
+        return $file->storeAs('avatars', $filename, 'public');
     }
 }

@@ -4,30 +4,7 @@
 
 @section('page_specific_css')
 <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.css" rel="stylesheet">
-<style>
-    .table-actions .material-icons {
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    /* DataTable Controls */
-    .dt-search,
-    .dt-length {
-        display: none;
-    }
-
-    .datatable-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
-    }
-
-    .badge-role {
-        font-weight: 500;
-        padding: 5px 10px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/admin/users/index.css') }}">
 @endsection
 
 @section('content')
@@ -108,8 +85,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-3" style="width: 90px; height: 90px; border-radius: 50%; overflow: hidden; object-fit: cover;">
-                                            <img src="{{ asset('storage/' . $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name)) }}" class="me-3 img-cover" alt="{{ $user->name }}">
+                                        <div class="user-avatar me-3" style="width: 90px; height: 90px; border-radius: 50%; overflow: hidden;">
+                                            <img src="{{ asset($user->avatar ? 'storage/' . $user->avatar : 'assets/img/image.png') }}" class="me-3 img-cover" alt="{{ $user->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                         </div>
                                         <div>
                                             <div class=" fw-bold">{{ $user->name }}
@@ -171,52 +148,5 @@
 
 @push('scripts')
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Tự động ẩn các thông báo sau 4 giây để giao diện gọn gàng
-        setTimeout(function() {
-            $(".alert").fadeOut(800, function() {
-                $(this).remove();
-            });
-        }, 4000);
-    });
-
-    $(document).ready(function() {
-        // Khởi tạo DataTable đồng nhất cấu hình
-        var table = $('#userTable').DataTable({
-            "dom": '<"top"rt><"datatable-footer"ip><"clear">',
-            "pageLength": 10,
-            "ordering": true, // User có thể bật ordering
-            "order": [
-                [0, 'desc']
-            ], // Mặc định user mới nhất lên đầu
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-            }
-        });
-
-        // Xử lý tìm kiếm Custom
-        $('#userSearch').on('keyup', function() {
-            table.search(this.value).draw();
-        });
-
-        // Lọc theo Vai trò
-        $('#filterRole').on('change', function() {
-            table.column(2).search(this.value).draw();
-        });
-
-        // Lọc theo Trạng thái
-        $('#filterStatus').on('change', function() {
-            table.column(3).search(this.value).draw();
-        });
-
-        // Thay đổi độ dài trang
-        $('#changeLength').on('change', function() {
-            table.page.len(this.value).draw();
-        });
-
-        // Di chuyển pagination
-        $('.datatable-footer').appendTo('#pagination-container');
-    });
-</script>
+<script src="{{ asset('assets/js/admin/users/index.js') }}"></script>
 @endpush

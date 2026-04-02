@@ -77,7 +77,7 @@ $isAccountPage = request()->routeIs(
         <!-- profile -->
         <div class="user-sidebar-profile d-flex align-items-center mb-4">
             <img class="user-sidebar-avatar"
-                src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://i.pravatar.cc/100' }}">
+                src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : '/assets/img/image.png' }}">
 
             <div class="ms-3">
                 <div class="user-sidebar-name fw-bold">

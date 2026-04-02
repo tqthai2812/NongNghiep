@@ -28,7 +28,7 @@ class CheckoutController extends Controller
 
         // Chỉ lấy ra các item trong giỏ hàng có ID nằm trong mảng $cartIds
         // Đi kèm eager loading theo sơ đồ database bạn cung cấp
-        $selectedItems = Cart::with(['package.product.images', 'package.packageType'])
+        $selectedItems = Cart::with(['package.packageType.product.images', 'package.packageType'])
             ->where('user_id', $user->id)
             ->whereIn('id', $cartIds)
             ->get();
@@ -61,7 +61,7 @@ class CheckoutController extends Controller
             DB::beginTransaction();
 
             // 2. Lấy các sản phẩm trong giỏ hàng và kiểm tra
-            $cartItems = Cart::with('package.product')->where('user_id', $user->id)->whereIn('id', $cartIds)->get();
+            $cartItems = Cart::with('package.packageType.product')->where('user_id', $user->id)->whereIn('id', $cartIds)->get();
 
             if ($cartItems->isEmpty()) {
                 throw new \Exception('Không có sản phẩm nào để thanh toán.');

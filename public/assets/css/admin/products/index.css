@@ -1,0 +1,50 @@
+ .product-img {
+     width: 50px;
+     height: 50px;
+     object-fit: cover;
+     border-radius: 4px;
+ }
+
+ .package-img {
+     width: 35px;
+     height: 35px;
+     object-fit: cover;
+     border-radius: 2px;
+ }
+
+ /* Style cho dòng phân loại con */
+ .variant-row {
+     background-color: #fdfdfd !important;
+     font-size: 0.9rem;
+ }
+
+ .variant-row td {
+     padding-top: 12px !important;
+     padding-bottom: 12px !important;
+     border-top: 1px dashed #eee !important;
+ }
+
+ .badge-outline {
+     border: 1px solid #ddd;
+     color: #666;
+     font-weight: 400;
+     background: none;
+ }
+
+ .table-actions .material-icons {
+     font-size: 20px;
+     cursor: pointer;
+ }
+
+ /* DataTable Controls */
+ .dt-search,
+ .dt-length {
+     display: none;
+ }
+
+ .datatable-footer {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-top: 20px;
+ }

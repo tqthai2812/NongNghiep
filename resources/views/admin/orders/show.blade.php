@@ -3,120 +3,36 @@
 @section('title', 'Chi tiết đơn hàng #' . $order->id)
 
 @section('page_specific_css')
-<style>
-    /* Khung lớn bao trọn nội dung */
-    .invoice-frame {
-        background-color: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
-        padding: 40px;
-        margin-bottom: 30px;
-    }
-
-    .frame-header {
-        border-bottom: 2px dashed #f3f4f6;
-        padding-bottom: 24px;
-        margin-bottom: 30px;
-    }
-
-    .info-box {
-        background-color: #f8fafc;
-        border-radius: 12px;
-        padding: 20px;
-        height: 100%;
-        border: 1px solid #f1f5f9;
-    }
-
-    /* Badge Trạng thái */
-    .status-badge {
-        padding: 8px 20px;
-        border-radius: 30px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .status-badge .material-icons {
-        font-size: 18px;
-        margin-right: 6px;
-    }
-
-    .badge-pending {
-        background-color: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fde68a;
-    }
-
-    .badge-shipping {
-        background-color: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-    }
-
-    .badge-completed {
-        background-color: #f0fdf4;
-        color: #15803d;
-        border: 1px solid #bbf7d0;
-    }
-
-    .badge-cancelled {
-        background-color: #fef2f2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-    }
-
-    /* Table Sản phẩm */
-    .table-order-items th {
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        color: #6b7280;
-        border-bottom: 2px solid #e5e7eb;
-        padding: 15px 10px;
-    }
-
-    .table-order-items td {
-        padding: 20px 10px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    /* Tổng kết Bill */
-    .bill-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        color: #4b5563;
-        font-size: 1.05rem;
-    }
-
-    .bill-row.total {
-        border-top: 2px solid #e5e7eb;
-        margin-top: 10px;
-        padding-top: 15px;
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #ef4444;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/admin/orders/show.css') }}">
 @endsection
 
 @section('content')
 <div class="row justify-content-center">
     <div class="col-xl-11 bg-white p-4 shadow-sm">
 
-        {{-- Nút quay lại và Alert nằm ngoài khung --}}
         <div class="mb-3 d-flex justify-content-between align-items-center">
             <a href="{{ route('admin.orders.index') }}" class="btn btn-light shadow-sm border text-dark fw-bold d-inline-flex align-items-center" style="border-radius: 8px;">
-                <i class="material-icons me-2" style="font-size: 18px;">arrow_back</i> Quay lại danh sách
+                <i class="material-icons me-2" style="font-size: 18px;">arrow_back</i> Quay lại
             </a>
 
-            {{-- Gợi ý: Nút in hóa đơn (nếu có tính năng window.print) --}}
-            <a href="{{ route('admin.orders.print', $order->id) }}" target="_blank" class="btn btn-primary fw-bold d-inline-flex align-items-center shadow-sm" style="border-radius: 8px;">
-                <i class="material-icons me-2" style="font-size: 18px;">print</i> Xuất PDF / In
-            </a>
+            <div class="d-flex gap-2">
+                {{-- Nút Xem trực tuyến --}}
+                <a href="{{ route('admin.orders.print', ['order' => $order->id, 'action' => 'view']) }}"
+                    target="_blank"
+                    class="btn btn-outline-primary fw-bold d-inline-flex align-items-center shadow-sm"
+                    style="border-radius: 8px;">
+                    <i class="material-icons me-2" style="font-size: 18px;">visibility</i> Xem PDF
+                </a>
+
+                {{-- Nút Tải về --}}
+                <a href="{{ route('admin.orders.print', ['order' => $order->id, 'action' => 'download']) }}"
+                    class="btn btn-primary fw-bold d-inline-flex align-items-center shadow-sm"
+                    style="border-radius: 8px;">
+                    <i class="material-icons me-2" style="font-size: 18px;">file_download</i> Tải file về
+                </a>
+            </div>
         </div>
+
 
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: 12px;">
@@ -251,7 +167,7 @@
                     <div class="ms-auto" style="max-width: 350px;">
                         <div class="bill-row">
                             <span>Tạm tính:</span>
-                            <span class="fw-bold text-dark">{{ number_format($order->total_price, 0, ',', '.') }} đ</span>
+                            <span class="fw-bold text-dark">{{ number_format($order->items->sum('price_at_purchase'), 0, ',', '.') }} đ</span>
                         </div>
                         <div class="bill-row">
                             <span>Phí vận chuyển:</span>
@@ -259,7 +175,7 @@
                         </div>
                         <div class="bill-row total">
                             <span>Tổng cộng:</span>
-                            <span>{{ number_format($order->total_price, 0, ',', '.') }} VNĐ</span>
+                            <span>{{ number_format($order->items->sum('price_at_purchase') + 30000, 0, ',', '.') }} VNĐ</span>
                         </div>
                     </div>
                 </div>

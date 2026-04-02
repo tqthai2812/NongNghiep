@@ -1,0 +1,112 @@
+
+/* Giữ nguyên CSS từ trang Create */
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+:root {
+    --google-blue: #1a73e8;
+    --border-color: #dadce0;
+}
+
+.btn-save {
+    background-color: #0d4d2b;
+    color: white;
+    padding: 10px 30px;
+    border: none;
+}
+
+.btn-save:hover {
+    background-color: #0a3d22;
+    color: white;
+}
+
+.form-floating>label {
+    color: #757575;
+    padding-left: 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #1a73e8;
+    box-shadow: none;
+    border-width: 2px;
+}
+
+.required-star {
+    color: #d93025;
+    margin-right: 4px;
+}
+
+.input-group-text {
+    background: none;
+    border: none;
+    padding-left: 0;
+    font-weight: 500;
+    color: #3c4043;
+    min-width: 200px;
+    text-align: right;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.image-box {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px dashed #cfd8dc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: .2s;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+.image-box:hover {
+    border-color: #1a73e8;
+    background: #f1f6ff;
+}
+
+.image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: .2s;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.image-box:hover .delete-btn {
+    opacity: 1;
+}
+
+.material-select {
+    border-radius: 5 !important;
+    padding-left: 12px !important;
+    transition: border-bottom 0.2s;
+}
+

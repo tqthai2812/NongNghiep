@@ -29,4 +29,10 @@ class UserAddress extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('is_default', 'desc')
+            ->orderBy('created_at', 'desc');
+    }
 }

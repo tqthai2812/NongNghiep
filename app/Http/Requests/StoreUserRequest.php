@@ -36,16 +36,22 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'name.required'    => 'Vui lòng nhập họ và tên.',
+            'name.string'      => 'Họ và tên phải là một chuỗi ký tự.',
+            'name.max'         => 'Họ và tên không được vượt quá 255 ký tự.',
             'email.required'        => 'Email không được để trống.',
             'email.email'           => 'Địa chỉ email không đúng định dạng.',
             'email.unique'          => 'Email này đã tồn tại trên hệ thống.',
             'password.required'     => 'Vui lòng nhập mật khẩu.',
+            'password.string'       => 'Mật khẩu phải là một chuỗi ký tự.',
             'password.min'          => 'Mật khẩu phải có ít nhất 6 ký tự.',
             'role.required'         => 'Vui lòng chọn vai trò người dùng.',
             'role.in'               => 'Vai trò không hợp lệ.',
             'avatar.image'          => 'Tệp tải lên phải là hình ảnh.',
             'avatar.mimes'          => 'Ảnh đại diện chỉ chấp nhận định dạng: jpg, jpeg, png, gif.',
             'avatar.max'            => 'Dung lượng ảnh không được vượt quá 2MB.',
+            'phone_number.string'   => 'Số điện thoại phải là một chuỗi ký tự.',
+            'phone_number.max'      => 'Số điện thoại không được vượt quá 15 ký tự.',
+            'is_active.boolean'     => 'Trạng thái kích hoạt không hợp lệ.',
         ];
     }
 }

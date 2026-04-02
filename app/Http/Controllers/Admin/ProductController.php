@@ -6,9 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
-use App\Models\ProductImage;
-use App\Models\ProductPackageType;
-use App\Models\ProductPackage;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreProductRequest;
 use Exception;
@@ -26,7 +23,7 @@ class ProductController extends Controller
         $products = Product::with([
             'category',
             'primaryImage',
-            'packageTypes.packages'
+            'packageTypes.packages',
         ])
             ->latest()
             ->get();
@@ -52,45 +49,34 @@ class ProductController extends Controller
 
         try {
 
-            // 1️⃣ Tạo product
-            $product = Product::create([
-                'category_id' => $request->category_id,
-                'name' => $request->name,
-                'brand' => $request->brand,
-                'description' => $request->description,
-            ]);
+            // Tạo product
+            $product = Product::create($request->validated());
 
-            // 2️⃣ Lưu hình ảnh
+            // Lưu hình ảnh
             if ($request->hasFile('images')) {
-
-                foreach ($request->file('images') as $image) {
-
+                foreach ($request->file('images') as $index => $image) {
                     if (!$image) continue;
 
                     $path = $image->store('products', 'public');
 
                     $product->images()->create([
                         'image_url' => $path,
-                        'is_primary' => false,
+                        // Set tấm đầu tiên (index 0) là primary luôn, không cần update sau vòng lặp
+                        'is_primary' => ($index === 0),
                     ]);
                 }
-
-                // Sau khi lưu xong → set ảnh đầu tiên làm primary
-                $product->images()->first()->update([
-                    'is_primary' => true
-                ]);
             }
 
-            // 3️⃣ Tạo package type
+            // Tạo package type
             $packageType = $product->packageTypes()->create([
                 'type_name' => $request->package_type_name
             ]);
 
-            // 4️⃣ Tạo packages (size + price + stock)
+            // Tạo packages (size + price + stock)
             foreach ($request->packages as $packageData) {
                 $stockInitial = $packageData['stock'] ?? 0;
 
-                $packageType->packages()->create([
+                $newPackage = $packageType->packages()->create([
                     'size' => $packageData['size'],
                     'unit' => $request->package_type_unit,
                     'price' => $packageData['price'] ?? 0,
@@ -99,7 +85,7 @@ class ProductController extends Controller
 
                 if ($stockInitial > 0) {
                     InventoryTransaction::create([
-                        'package_id' => $packageType->packages()->latest()->first()->id,
+                        'package_id' => $newPackage->id,
                         'user_id'    => Auth::id(),
                         'type'       => 'in',
                         'quantity'   => $stockInitial,
@@ -242,24 +228,38 @@ class ProductController extends Controller
     {
         DB::transaction(function () use ($product) {
 
-            // 1. Xóa file ảnh
+            // 1. Xóa file ảnh vật lý
             foreach ($product->images as $img) {
                 if ($img->image_url && Storage::disk('public')->exists($img->image_url)) {
                     Storage::disk('public')->delete($img->image_url);
                 }
             }
 
-            // 2. Xóa images DB
+            // 2. Xóa dữ liệu trong DB theo thứ tự từ CON đến CHA
+
+            // Xóa ảnh trong DB
             $product->images()->delete();
 
-            // 3. Xóa package types + packages
+            // Duyệt từng Package Type để xóa các thứ liên quan đến Package
             foreach ($product->packageTypes as $type) {
+
+                // Lấy danh sách ID của các packages thuộc type này
+                $packageIds = $type->packages()->pluck('id');
+
+                // --- BƯỚC QUAN TRỌNG: Xóa lịch sử kho trước ---
+                InventoryTransaction::whereIn('package_id', $packageIds)->delete();
+
+                // (Tùy chọn) Xóa thêm giỏ hàng hoặc review nếu cần
+                // Cart::whereIn('package_id', $packageIds)->delete();
+
+                // Sau đó mới xóa các packages
                 $type->packages()->delete();
             }
 
+            // Xóa các Package Types
             $product->packageTypes()->delete();
 
-            // 4. Xóa product
+            // Cuối cùng mới xóa Product
             $product->delete();
         });
 

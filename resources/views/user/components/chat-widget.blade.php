@@ -19,7 +19,7 @@
 
     <div style="display: flex; gap: 10px; padding: 15px; background: white; border-top: 1px solid #eee;">
         <input type="text" id="user-input" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 14px;" placeholder="Nhập câu hỏi...">
-        <button onclick="sendMessage()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">Gửi</button>
+        <button id="send-button" onclick="sendMessage()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: background 0.3s;">Gửi</button>
     </div>
 </div>
 
@@ -40,27 +40,35 @@
 
     async function sendMessage() {
         let inputField = document.getElementById('user-input');
+        let sendButton = document.getElementById('send-button');
         let message = inputField.value.trim();
+
         if (!message) return;
 
         let chatBox = document.getElementById('chat-box');
 
+        // 1. Vô hiệu hóa nút gửi & ô nhập liệu, đổi màu nút thành xám
+        sendButton.disabled = true;
+        sendButton.style.background = '#cccccc';
+        sendButton.style.cursor = 'not-allowed';
+        inputField.disabled = true;
+
         // Render tin nhắn của User
         chatBox.innerHTML += `
-            <div style="align-self: flex-end; background: #28a745; color: white; padding: 10px 14px; border-radius: 15px 15px 0 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
-                ${message}
-            </div>
-        `;
+        <div style="align-self: flex-end; background: #28a745; color: white; padding: 10px 14px; border-radius: 15px 15px 0 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
+            ${message}
+        </div>
+    `;
         inputField.value = '';
         chatBox.scrollTop = chatBox.scrollHeight;
 
         // Render hiệu ứng AI đang gõ
         let typingId = 'typing-' + Date.now();
         chatBox.innerHTML += `
-            <div id="${typingId}" style="align-self: flex-start; background: #e9ecef; padding: 10px 14px; border-radius: 15px 15px 15px 0; max-width: 85%; font-size: 14px; margin-bottom: 5px; color: #666;">
-                <i>Đang suy nghĩ...</i>
-            </div>
-        `;
+        <div id="${typingId}" style="align-self: flex-start; background: #e9ecef; padding: 10px 14px; border-radius: 15px 15px 15px 0; max-width: 85%; font-size: 14px; margin-bottom: 5px; color: #666;">
+            <i>Đang suy nghĩ...</i>
+        </div>
+    `;
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
@@ -79,31 +87,37 @@
             document.getElementById(typingId).remove(); // Xóa chữ đang suy nghĩ
 
             if (response.ok) {
-                // Thay thế \n thành <br> để danh sách sản phẩm hiển thị xuống dòng đẹp mắt
                 let formattedReply = data.reply.replace(/\n/g, '<br>');
-
                 chatBox.innerHTML += `
-                    <div style="align-self: flex-start; background: #e9ecef; padding: 10px 14px; border-radius: 15px 15px 15px 0; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
-                        ${formattedReply}
-                    </div>
-                `;
+                <div style="align-self: flex-start; background: #e9ecef; padding: 10px 14px; border-radius: 15px 15px 15px 0; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
+                    ${formattedReply}
+                </div>
+            `;
             } else {
                 chatBox.innerHTML += `
-                    <div style="align-self: flex-start; background: #ffebee; color: #c62828; padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
-                        <b>Lỗi:</b> ${data.reply}
-                    </div>
-                `;
+                <div style="align-self: flex-start; background: #ffebee; color: #c62828; padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
+                    <b>Lỗi:</b> ${data.reply}
+                </div>
+            `;
             }
         } catch (error) {
             document.getElementById(typingId).remove();
             chatBox.innerHTML += `
-                <div style="align-self: flex-start; background: #ffebee; color: #c62828; padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
-                    <b>Lỗi:</b> Không thể kết nối tới máy chủ.
-                </div>
-            `;
-        }
+            <div style="align-self: flex-start; background: #ffebee; color: #c62828; padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; margin-bottom: 5px;">
+                <b>Lỗi:</b> Không thể kết nối tới máy chủ.
+            </div>
+        `;
+        } finally {
+            // 2. Bất kể thành công hay lỗi, khôi phục lại trạng thái nút và ô nhập liệu
+            sendButton.disabled = false;
+            sendButton.style.background = '#28a745';
+            sendButton.style.cursor = 'pointer';
 
-        chatBox.scrollTop = chatBox.scrollHeight;
+            inputField.disabled = false;
+            inputField.focus(); // Tự động đưa con trỏ chuột quay lại ô nhập để gõ tiếp
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     }
 
     // Cho phép ấn Enter để gửi

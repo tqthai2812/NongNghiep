@@ -17,7 +17,7 @@
     <script src="https://kit.fontawesome.com/950843fd38.js" crossorigin="anonymous"></script>
 
     {{-- Custom CSS --}}
-    <link href="{{ asset('assets/css/user/layouts.css') }}?v={{ time() }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/layouts.css') }}?v={{ time() }}" rel="stylesheet">
 
     @stack('page_specific_css')
 </head>
@@ -80,7 +80,7 @@
                         data-bs-toggle="dropdown">
 
                         {{-- Avatar --}}
-                        <img src="{{asset('storage/' . Auth::user()->avatar ?? 'avatars/default.png')}}"
+                        <img src="{{ asset(Auth::user()->avatar ? 'storage/' . Auth::user()->avatar : '/assets/img/image.png') }}"
                             alt="avatar"
                             width="35"
                             height="35"

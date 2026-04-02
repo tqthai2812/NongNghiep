@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ProductPackageType;
+use Illuminate\Support\Facades\DB; // Thêm dòng này
 
 class ProductPackage extends Model
 {
@@ -32,15 +34,21 @@ class ProductPackage extends Model
         return "{$productName} - {$typeName} {$sizeUnit}";
     }
 
-    public function product()
-    {
-        // Giả sử khóa ngoại trong bảng product_packages là product_id
-        return $this->belongsTo(Product::class, 'product_id');
-    }
-
     // Thêm relationship này để lấy danh sách đánh giá của gói sản phẩm
     public function reviews()
     {
         return $this->hasMany(ProductReview::class, 'package_id');
+    }
+
+    // Trong Model ProductPackage
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'package_id');
+    }
+
+    public function getTotalSalesAttribute()
+    {
+        // Tổng = Số lượng * Giá tại thời điểm mua
+        return $this->orderItems()->sum(DB::raw('quantity * price_at_purchase'));
     }
 }

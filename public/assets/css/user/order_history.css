@@ -1,0 +1,111 @@
+body {
+    background: #f5f5f5;
+}
+
+.sidebar {
+    background: white;
+    padding: 20px;
+}
+
+.sidebar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.sidebar a {
+    display: block;
+    padding: 10px 0;
+    text-decoration: none;
+    color: #333;
+    font-size: 15px;
+}
+
+.sidebar a.active {
+    color: #ee4d2d;
+    font-weight: 500;
+}
+
+.order-tabs {
+    background: white;
+    border-bottom: 1px solid #eee;
+}
+
+.order-tabs .nav-link {
+    color: #555;
+    cursor: pointer;
+}
+
+.order-tabs .nav-link.active {
+    color: #ee4d2d;
+    border-bottom: 2px solid #ee4d2d;
+}
+
+.order-search {
+    background: white;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-card {
+    background: white;
+    margin-top: 15px;
+}
+
+.product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.price-old {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 10px;
+}
+
+.price-new {
+    color: #ee4d2d;
+    font-weight: 600;
+}
+
+.total-price {
+    color: #ee4d2d;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.order-footer {
+    background: #fafafa;
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+}
+
+/* danh gia san pham */
+
+/* CSS cho 5 ngôi sao đánh giá */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    font-size: 30px;
+    color: #ddd;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 5px;
+}
+
+.star-rating input:checked~label,
+.star-rating label:hover,
+.star-rating label:hover~label {
+    color: #ffc107;
+    /* Màu vàng shopee */
+}

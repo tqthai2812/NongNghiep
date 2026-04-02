@@ -3,30 +3,23 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Category;
 use App\Models\Product;
+use App\Models\OrderItem;
 
 class Homepage extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
-
-        // Lấy 8 sản phẩm mới nhất
-        // Sử dụng with('primaryImage') để lấy kèm ảnh đại diện luôn
         $latestProducts = Product::with('primaryImage')
-            ->latest() // Sắp xếp theo created_at giảm dần
-            ->take(8)  // Lấy tối đa 8 bản ghi (nếu có 3 thì lấy 3, có 10 thì lấy 8)
+            ->latest()
+            ->take(8)
             ->get();
 
-        return view('user.index', compact('categories', 'latestProducts'));
+        return view('user.index', compact('latestProducts'));
     }
 
     public function productDetail($id)
     {
-        // 1. Lấy thông tin sản phẩm kèm các quan hệ cần thiết
-        // Thay vì chỉ gọi images và packageTypes, ta gọi lồng thêm reviews thông qua ProductPackage
         $product = Product::with([
             'images',
             'packageTypes.packages.reviews.user', // Lấy reviews và user của từng package
@@ -62,7 +55,7 @@ class Homepage extends Controller
         ];
 
         // Tính tổng số lượng đã bán của sản phẩm này (dựa vào bảng OrderItems)
-        $totalSold = \App\Models\OrderItem::whereHas('order', function ($q) {
+        $totalSold = OrderItem::whereHas('order', function ($q) {
             $q->where('status', 'completed'); // Chỉ tính những đơn đã giao thành công
         })->whereHas('package.packageType', function ($q) use ($product) {
             $q->where('product_id', $product->id);

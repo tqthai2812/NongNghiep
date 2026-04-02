@@ -3,109 +3,62 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreAddressRequest;
+use App\Http\Requests\UpdateAddressRequest;
 
 class AddressController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreAddressRequest $request)
     {
-        // 1. Validate dữ liệu gửi lên
-        $request->validate([
-            'receiver_name'  => 'required|string|max:255',
-            'receiver_phone' => 'required|string|max:20',
-            'province'       => 'required|string',
-            'district'       => 'required|string',
-            'ward'           => 'required|string',
-            'province_id'    => 'required|string',
-            'district_id'    => 'required|string',
-            'ward_id'        => 'required|string',
-            'address_detail' => 'required|string|max:255',
-            'address_type'   => 'required|in:home,office',
-        ], [
-            // Tùy chỉnh câu thông báo lỗi (nếu cần)
-            'receiver_name.required' => 'Vui lòng nhập họ tên người nhận.',
-            'receiver_phone.required' => 'Vui lòng nhập số điện thoại.',
-            'province_id.required' => 'Vui lòng chọn Tỉnh/Thành phố.',
-            'district_id.required' => 'Vui lòng chọn Quận/Huyện.',
-            'ward_id.required' => 'Vui lòng chọn Phường/Xã.',
-            'address_detail.required' => 'Vui lòng nhập địa chỉ cụ thể.',
-        ]);
+        $userId = request()->user()->id;
 
-        $userId = Auth::id();
-        $isDefault = $request->has('is_default') ? true : false;
+        // 1. Xác định trạng thái mặc định
+        // Nếu là địa chỉ đầu tiên HOẶC người dùng check "is_default", thì set true
+        $isFirstAddress = !UserAddress::where('user_id', $userId)->exists();
+        $isDefault = $isFirstAddress || $request->boolean('is_default');
 
-        // Nếu đây là địa chỉ đầu tiên của user, tự động cho nó làm mặc định
-        $addressCount = UserAddress::where('user_id', $userId)->count();
-        if ($addressCount === 0) {
-            $isDefault = true;
-        }
-
-        // 2. Xử lý logic địa chỉ mặc định
+        // 2. Xử lý logic reset địa chỉ mặc định cũ (chỉ chạy khi địa chỉ mới là mặc định)
         if ($isDefault) {
-            // Cập nhật tất cả địa chỉ cũ của user này thành không mặc định
             UserAddress::where('user_id', $userId)->update(['is_default' => false]);
         }
 
-        // 3. Lưu dữ liệu vào Database
-        $address = UserAddress::create([
-            'user_id'        => $userId,
-            'receiver_name'  => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'province'       => $request->province, // Tên tỉnh (lấy từ input hidden)
-            'district'       => $request->district, // Tên huyện
-            'ward'           => $request->ward,     // Tên xã
-            'province_id'    => $request->province_id,
-            'district_id'    => $request->district_id,
-            'ward_id'        => $request->ward_id,
-            'address_detail' => $request->address_detail,
-            'address_type'   => $request->address_type,
-            'is_default'     => $isDefault,
-            // latitude và longitude tạm thời để trống (null) vì form chưa có Google Map API
-        ]);
+        // 3. Tạo địa chỉ mới
+        $address = UserAddress::create(array_merge(
+            $request->validated(),
+            [
+                'user_id'    => $userId,
+                'is_default' => $isDefault
+            ]
+        ));
 
-        // KIỂM TRA: Nếu là request AJAX thì trả về JSON
+        // 4. Trả về response
         if ($request->expectsJson()) {
             return response()->json([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Thêm địa chỉ thành công!',
-                'data' => $address
+                'data'    => $address
             ]);
         }
 
-        // Backup: Dành cho trường hợp lỡ submit form theo cách truyền thống
         return back()->with('success', 'Thêm địa chỉ nhận hàng thành công!');
     }
 
     // ========================================================
     // HÀM MỚI: XỬ LÝ CẬP NHẬT ĐỊA CHỈ
     // ========================================================
-    public function update(Request $request, $id)
+    public function update(UpdateAddressRequest $request, $id)
     {
-        // 1. Validate dữ liệu gửi lên (Giống như thêm mới)
-        $request->validate([
-            'receiver_name'  => 'required|string|max:255',
-            'receiver_phone' => 'required|string|max:20',
-            'province'       => 'required|string',
-            'district'       => 'required|string',
-            'ward'           => 'required|string',
-            'province_id'    => 'required|string',
-            'district_id'    => 'required|string',
-            'ward_id'        => 'required|string',
-            'address_detail' => 'required|string|max:255',
-            'address_type'   => 'required|in:home,office',
-        ]);
 
-        $userId = Auth::id();
+        $userId = request()->user()->id;
 
-        // 2. Tìm địa chỉ cần sửa (bắt buộc phải thuộc về user đang đăng nhập để tránh lỗi bảo mật)
         $address = UserAddress::where('user_id', $userId)->findOrFail($id);
 
-        $isDefault = $request->has('is_default') ? true : false;
+        $isDefault = $request->boolean('is_default');
 
         // Xử lý an toàn: Nếu user chỉ có 1 địa chỉ duy nhất, thì ép buộc nó luôn là mặc định
-        $addressCount = UserAddress::where('user_id', $userId)->count();
+        $addressCount = UserAddress::where('user_id', $userId)->where('is_default', '=', true)->count();
         if ($addressCount === 1) {
             $isDefault = true;
         }
@@ -119,19 +72,14 @@ class AddressController extends Controller
         }
 
         // 4. Lưu bản cập nhật vào database
-        $address->update([
-            'receiver_name'  => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'province'       => $request->province,
-            'district'       => $request->district,
-            'ward'           => $request->ward,
-            'province_id'    => $request->province_id,
-            'district_id'    => $request->district_id,
-            'ward_id'        => $request->ward_id,
-            'address_detail' => $request->address_detail,
-            'address_type'   => $request->address_type,
-            'is_default'     => $isDefault,
-        ]);
+        $address->update(
+            array_merge(
+                $request->validated(),
+                [
+                    'is_default' => $isDefault
+                ]
+            )
+        );
 
         // KIỂM TRA: Trả về JSON để Javascript cập nhật không cần tải lại trang
         if ($request->expectsJson()) {

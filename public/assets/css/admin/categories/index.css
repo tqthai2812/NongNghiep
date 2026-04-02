@@ -1,0 +1,24 @@
+.category-img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.table-actions .materiali {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.dt-search,
+.dt-length {
+    display: none;
+}
+
+.datatable-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}

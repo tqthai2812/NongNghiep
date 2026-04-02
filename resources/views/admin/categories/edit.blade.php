@@ -3,76 +3,12 @@
 @section('title', 'Sửa danh mục')
 
 @push('styles')
-
-<style>
-    .card-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #333;
-    }
-
-    :root {
-        --google-blue: #1a73e8;
-        --border-color: #dadce0;
-    }
-
-    .btn-save {
-        background-color: #0d4d2b;
-        color: white;
-        padding: 10px 30px;
-        border: none;
-    }
-
-    .btn-save:hover {
-        background-color: #0a3d22;
-        color: white;
-    }
-
-    /* Floating label style */
-    .form-floating>label {
-        color: #757575;
-        padding-left: 12px;
-    }
-
-    .form-control:focus {
-        border-color: var(--google-blue);
-        box-shadow: none;
-        border-width: 2px;
-    }
-
-    .form-floating>.form-control:focus~label,
-    .form-floating>.form-control:not(:placeholder-shown)~label {
-        color: var(--google-blue);
-        opacity: 1;
-    }
-
-    .required-star {
-        color: #d93025;
-        margin-right: 4px;
-    }
-
-    .input-group-text {
-        background: none;
-        border: none;
-        padding-left: 0;
-        font-weight: 500;
-        color: #3c4043;
-        min-width: 200px;
-        text-align: right;
-    }
-
-    .form-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-</style>
-
+<link rel="stylesheet" href="{{ asset('assets/css/admin/categories/edit.css') }}">
 @endpush
 
 @section('content')
 
-<form action="{{ route('admin.categories.update', $category->id) }}" method="POST">
+<form action="{{ route('admin.categories.update', $category->id) }}" method="POST" novalidate>
     @csrf
     @method('PUT')
     <div class="row">

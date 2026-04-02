@@ -31,10 +31,9 @@ class CategoriesController extends Controller
      */
     public function store(StoreCategoryRequest $request)
     {
-        Category::create([
-            'name' => $request->get('name'),
-            'description' => $request->get('description'),
-        ]);
+        Category::create(
+            $request->validated()
+        );
 
         return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được tạo thành công.');
     }
@@ -62,10 +61,7 @@ class CategoriesController extends Controller
     public function update(StoreCategoryRequest $request, string $id)
     {
         $category = Category::findOrFail($id);
-        $category->update([
-            'name' => $request->get('name'),
-            'description' => $request->get('description'),
-        ]);
+        $category->update($request->validated());
 
         return redirect()->route('admin.categories.index')->with('success', 'Danh mục đã được cập nhật thành công.');
     }
@@ -75,16 +71,17 @@ class CategoriesController extends Controller
      */
     public function destroy(Category $category)
     {
+        // Kiểm tra chủ động (Dễ đọc, thông báo rõ ràng)
         if ($category->products()->exists()) {
-            return redirect()
-                ->route('admin.categories.index')
-                ->with('error', 'Không thể xóa danh mục vì còn sản phẩm.');
+            return back()->with('error', 'Danh mục này đang chứa ' . $category->products()->count() . ' sản phẩm, không thể xóa!');
         }
 
-        $category->delete();
-
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Xóa danh mục thành công.');
+        try {
+            $category->delete();
+            return redirect()->route('admin.categories.index')->with('success', 'Xóa danh mục thành công.');
+        } catch (\Exception $e) {
+            // Phòng hờ các lỗi hệ thống khác (vd: mất kết nối DB)
+            return back()->with('error', 'Có lỗi hệ thống xảy ra, vui lòng thử lại sau.');
+        }
     }
 }

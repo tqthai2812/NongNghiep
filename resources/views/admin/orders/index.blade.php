@@ -4,64 +4,7 @@
 
 @section('page_specific_css')
 <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.css" rel="stylesheet">
-<style>
-    .table-actions .material-icons {
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    /* DataTable Controls */
-    .dt-search,
-    .dt-length {
-        display: none;
-    }
-
-    .datatable-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
-    }
-
-    /* Custom Select Trạng thái */
-    .status-select {
-        font-weight: 500;
-        border-radius: 20px;
-        padding: 4px 30px 4px 12px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        box-shadow: none;
-    }
-
-    .status-select:focus {
-        box-shadow: none;
-    }
-
-    /* Màu sắc trạng thái */
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-        border-color: #ffeeba;
-    }
-
-    .status-shipping {
-        background-color: #cce5ff;
-        color: #004085;
-        border-color: #b8daff;
-    }
-
-    .status-completed {
-        background-color: #d4edda;
-        color: #155724;
-        border-color: #c3e6cb;
-    }
-
-    .status-cancelled {
-        background-color: #f8d7da;
-        color: #721c24;
-        border-color: #f5c6cb;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/admin/orders/index.css') }}">
 @endsection
 
 @section('content')
@@ -243,69 +186,25 @@
 @push('scripts')
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="{{ asset('assets/js/admin/orders/index.js') }}"></script>
 <script>
-    $(document).ready(function() {
-        // Ẩn thông báo sau 4 giây
-        setTimeout(function() {
-            $(".alert").fadeOut(800, function() {
-                $(this).remove();
-            });
-        }, 4000);
-
-        // Khởi tạo DataTable
-        var table = $('#orderTable').DataTable({
-            "dom": '<"top"rt><"datatable-footer"ip><"clear">',
-            "pageLength": 10,
-            "ordering": true,
-            "order": [
-                [4, 'desc']
-            ], // Mặc định sắp xếp theo ngày đặt mới nhất
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-            }
-        });
-
-        // Xử lý tìm kiếm Custom
-        $('#orderSearch').on('keyup', function() {
-            table.search(this.value).draw();
-        });
-
-        // Lọc theo Trạng thái (Sử dụng data-search trên thẻ <td>)
-        $('#filterStatus').on('change', function() {
-            var val = $.fn.dataTable.util.escapeRegex($(this).val());
-            // Cột index 3 là cột Trạng thái
-            table.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
-        });
-
-        // Thay đổi độ dài trang
-        $('#changeLength').on('change', function() {
-            table.page.len(this.value).draw();
-        });
-
-        // Di chuyển pagination
-        $('.datatable-footer').appendTo('#pagination-container');
-    });
-
-    // Hàm cập nhật màu nền của Select ngay khi người dùng đổi option (trước khi reload web)
-    function updateStatusColor(selectElement) {
-        // Xóa class màu cũ
-        $(selectElement).removeClass('status-pending status-shipping status-completed status-cancelled');
-        // Thêm class màu mới dựa trên value
-        $(selectElement).addClass('status-' + $(selectElement).val());
-    }
-
-    // Xử lý nút Tải Báo Cáo Doanh Thu (Xuất từ Server)
-    $('#btnDownloadRevenueReport').on('click', function() {
+    $("#btnDownloadRevenueReport").on("click", function() {
         // Lấy dữ liệu từ form
-        let startDate = $('#reportStartDate').val();
-        let endDate = $('#reportEndDate').val();
-        let status = $('#reportStatus').val();
+        let startDate = $("#reportStartDate").val();
+        let endDate = $("#reportEndDate").val();
+        let status = $("#reportStatus").val();
 
         // Xây dựng URL chứa các tham số bộ lọc
-        let url = "{{ route('admin.orders.report.revenue') }}?start_date=" + startDate + "&end_date=" + endDate + "&status=" + status;
+        let url =
+            "{{ route('admin.orders.report.revenue') }}?start_date=" +
+            startDate +
+            "&end_date=" +
+            endDate +
+            "&status=" +
+            status;
 
         // Đóng Modal
-        $('#revenueReportModal').modal('hide');
+        $("#revenueReportModal").modal("hide");
 
         // Bắn URL lên trình duyệt để Server trả file Excel về
         window.location.href = url;

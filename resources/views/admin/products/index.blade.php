@@ -4,63 +4,33 @@
 
 @section('page_specific_css')
 <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.css" rel="stylesheet">
-<style>
-    .product-img {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 4px;
-    }
-
-    .package-img {
-        width: 35px;
-        height: 35px;
-        object-fit: cover;
-        border-radius: 2px;
-    }
-
-    /* Style cho dòng phân loại con */
-    .variant-row {
-        background-color: #fdfdfd !important;
-        font-size: 0.9rem;
-    }
-
-    .variant-row td {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-        border-top: 1px dashed #eee !important;
-    }
-
-    .badge-outline {
-        border: 1px solid #ddd;
-        color: #666;
-        font-weight: 400;
-        background: none;
-    }
-
-    .table-actions .material-icons {
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    /* DataTable Controls */
-    .dt-search,
-    .dt-length {
-        display: none;
-    }
-
-    .datatable-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/admin/products/index.css') }}">
 @endsection
 
 @section('content')
 <div class="row">
     <div class="col-md-12">
+        {{-- Thông báo Lỗi (Ví dụ: Tự xóa chính mình) --}}
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mt-3" role="alert" style="background-color: #fdeaea; color: #d93025; border-radius: 8px;">
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-2">error_outline</i>
+                <span class="fw-bold">{{ session('error') }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        {{-- Thông báo Thành công --}}
+        @if(session('success'))
+        <div class=" alert alert-success alert-dismissible fade show border-0 shadow-sm mt-3" role="alert" style="background-color: #e6f4ea; color: #1e8e3e; border-radius: 8px;">
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-2">check_circle_outline</i>
+                <span class="fw-bold">{{ session('success') }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
         <div class="card card-plain">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mt-0 text-dark fw-bold">Danh Sách Sản Phẩm Tại Cửa Hàng</h4>
@@ -139,7 +109,7 @@
                                         <span>{{ $packageType->type_name }} - {{ $package->size }} {{ $package->unit }}</span>
                                     </div>
                                 </td>
-                                <td class="text-center text-muted">0</td>
+                                <td class="text-center text-muted">{{ number_format($package->getTotalSalesAttribute(), 0, ',', '.') }}</td>
                                 <td class="text-center">₫{{ number_format($package->price, 0, ',', '.') }}</td>
                                 <td class="text-center text-muted">{{ $package->stock }}</td>
                                 <td class="text-end"></td>
@@ -162,53 +132,6 @@
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.js"></script>
 @push('scripts')
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // --- BƯỚC 1: Xử lý dữ liệu ẩn để hỗ trợ tìm kiếm ---
-        // Biến lưu tên sản phẩm cha hiện tại
-        var currentProductName = '';
-
-        // Duyệt qua từng dòng trong bảng TRƯỚC khi khởi tạo DataTable
-        $('#productTable tbody tr').each(function() {
-            var $row = $(this);
-
-            if (!$row.hasClass('variant-row')) {
-                // Nếu là dòng cha: Lấy nội dung tên sản phẩm (ở cột thứ 2 - index 1)
-                // .text() lấy cả ID bên dưới, nhưng không sao, miễn là có chứa tên
-                currentProductName = $row.find('td:eq(1)').text().trim();
-            } else {
-                // Nếu là dòng con: Chèn tên sản phẩm cha vào một thẻ ẩn (d-none)
-                // Việc này giúp khi search "Áo mưa", dòng này cũng được coi là có chứa từ khóa đó
-                if (currentProductName) {
-                    $row.find('td:eq(1)').append(
-                        '<span class="d-none"> ' + currentProductName + ' </span>'
-                    );
-                }
-            }
-        });
-
-        // --- BƯỚC 2: Khởi tạo DataTable ---
-        var table = $('#productTable').DataTable({
-            "dom": '<"top"rt><"datatable-footer"ip><"clear">',
-            "pageLength": 10,
-            "ordering": false, // Bắt buộc tắt ordering để giữ thứ tự cha-con
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-            }
-        });
-
-        // --- BƯỚC 3: Xử lý các bộ lọc Custom ---
-        $('#customSearch').on('keyup', function() {
-            table.search(this.value).draw();
-        });
-
-        $('#changeLength').on('change', function() {
-            table.page.len(this.value).draw();
-        });
-
-        // Di chuyển thanh phân trang ra vị trí mong muốn
-        $('.datatable-footer').appendTo('#pagination-container');
-    });
-</script>
+<script src="{{ asset('assets/js/admin/products/index.js') }}"></script>
 @endpush
 @endpush

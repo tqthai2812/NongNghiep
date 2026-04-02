@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 
 class UserController extends Controller
@@ -106,17 +108,29 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // Không cho phép xóa chính mình
-
-        if (auth()->id() === $user->id) {
+        // 1. Kiểm tra không cho tự xóa chính mình
+        if (Auth::id() === $user->id) {
             return back()->with('error', 'Bạn không thể tự xóa chính mình!');
         }
 
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
-        }
+        try {
+            // 2. Tiến hành xóa
+            // Nếu có ảnh đại diện thì xóa file vật lý trước
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
 
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Đã xóa người dùng!');
+            $user->delete();
+
+            return redirect()->route('admin.users.index')->with('success', 'Đã xóa người dùng thành công!');
+        } catch (QueryException $e) {
+            // 3. Bắt lỗi vi phạm khóa ngoại (Mã lỗi 23000)
+            if ($e->getCode() === '23000') {
+                return back()->with('error', 'Không thể xóa! Người dùng này đã có dữ liệu liên quan (Đơn hàng, đánh giá,...) trong hệ thống.');
+            }
+
+            // Các lỗi cơ sở dữ liệu khác
+            return back()->with('error', 'Có lỗi xảy ra khi kết nối cơ sở dữ liệu.');
+        }
     }
 }

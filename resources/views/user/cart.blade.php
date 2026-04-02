@@ -124,8 +124,8 @@
         </button>
     </div>
 
-    <div class="container cart-container pt-4">
-
+    <div class="container cart-container py-4">
+        @if($cartItems->count() > 0)
         <!-- HEADER -->
 
         <div class="cart-header d-flex align-items-center p-3 border bg-white border-0 rounded-2 mt-3">
@@ -216,10 +216,25 @@
     </div>
     @endforeach
 
-
-
+    @else
+    <div class="bg-white rounded-2 p-5 mt-3 text-center mb-0">
+        <div class="row align-items-center">
+            <div class="col-md-7 text-start ps-5">
+                <h2 class="fw-bold" style="font-size: 2rem;">Chưa có sản phẩm nào trong giỏ hàng</h2>
+                <p class="text-secondary mb-4">Cùng mua sắm hàng ngàn sản phẩm tại TQTShop nhé!</p>
+                <a href="/" class="btn btn-success px-2 py-1 btn-lg rounded-pill fs-5 text-white">Mua hàng</a>
+            </div>
+            <div class="col-md-5">
+                <img src="{{ asset('assets/img/cart.png') }}"
+                    alt="Empty Cart"
+                    class="img-fluid"
+                    style="width: 500px;">
+            </div>
+        </div>
+    </div>
+    @endif
     <!-- FOOTER -->
-
+    @if($cartItems->count() > 0)
     <div class="cart-footer">
 
         <div class="d-flex justify-content-between align-items-center">
@@ -247,6 +262,7 @@
         </div>
 
     </div>
+    @endif
 
 </div>
 </div>

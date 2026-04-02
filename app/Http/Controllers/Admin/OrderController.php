@@ -126,20 +126,25 @@ class OrderController extends Controller
 
     public function print($id)
     {
-        // Lấy dữ liệu đơn hàng giống như hàm show
         $order = Order::with(['user', 'items.package.packageType.product'])->findOrFail($id);
 
-        // Tạo PDF từ một View riêng biệt dành cho việc in
+        // Lấy giá trị 'action' từ URL (mặc định là stream)
+        $action = request()->query('action', 'view');
+        $fileName = 'Don_Hang_' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf';
+
         $pdf = Pdf::loadView('admin.orders.print', compact('order'));
 
-        // Trả về file PDF để xem trực tiếp trên trình duyệt (hoặc dùng ->download() để tải về)
-        return $pdf->stream('Don_Hang_' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+        if ($action === 'download') {
+            return $pdf->download($fileName);
+        }
+
+        return $pdf->stream($fileName);
     }
 
     /**
      * Lấy dữ liệu Báo cáo Doanh thu & Đơn hàng (dùng cho AJAX Xuất Excel)
      */
-    public function getRevenueReportData(\Illuminate\Http\Request $request)
+    public function getRevenueReportData(Request $request)
     {
         $startDate = $request->start_date;
         $endDate = $request->end_date;
@@ -149,17 +154,5 @@ class OrderController extends Controller
 
         // Gọi Class Export và tải thẳng file về máy
         return Excel::download(new RevenueReportExport($startDate, $endDate, $status), $filename);
-    }
-
-    // Hàm phụ trợ dịch trạng thái
-    private function translateStatus($status)
-    {
-        $statuses = [
-            'pending' => 'Chờ xử lý',
-            'shipping' => 'Đang giao',
-            'completed' => 'Đã hoàn thành',
-            'cancelled' => 'Đã hủy'
-        ];
-        return $statuses[$status] ?? $status;
     }
 }

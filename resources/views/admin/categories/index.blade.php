@@ -3,42 +3,32 @@
 @section('title', 'Danh sách danh mục')
 
 @section('page_specific_css')
-
 <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.css" rel="stylesheet">
-
-<style>
-    .category-img {
-        width: 45px;
-        height: 45px;
-        object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid #eee;
-    }
-
-    .table-actions .materiali {
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    .dt-search,
-    .dt-length {
-        display: none;
-    }
-
-    .datatable-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
-    }
-</style>
-
+<link rel="stylesheet" href="{{ asset('assets/css/admin/categories/index.css') }}">
 @endsection
 
 @section('content')
 
 <div class="row">
     <div class="col-md-12">
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mt-3" role="alert" style="background-color: #fdeaea; color: #d93025; border-radius: 8px;">
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-2">error_outline</i>
+                <span class="fw-bold">{{ session('error') }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        @if(session('success'))
+        <div class=" alert alert-success alert-dismissible fade show border-0 shadow-sm mt-3" role="alert" style="background-color: #e6f4ea; color: #1e8e3e; border-radius: 8px;">
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-2">check_circle_outline</i>
+                <span class="fw-bold">{{ session('success') }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
         <div class="card card-plain">
 
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -151,38 +141,5 @@
 @push('scripts')
 
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.0.8/r-3.0.2/sp-2.3.1/datatables.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-
-        var table = $('#categoryTable').DataTable({
-
-            dom: '<"top"rt><"datatable-footer"ip><"clear">',
-
-            pageLength: 10,
-
-            ordering: false,
-
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
-            }
-
-        });
-
-
-        $('#customSearch').on('keyup', function() {
-            table.search(this.value).draw();
-        });
-
-
-        $('#changeLength').on('change', function() {
-            table.page.len(this.value).draw();
-        });
-
-
-        $('.datatable-footer').appendTo('#pagination-container');
-
-    });
-</script>
-
+<script src="{{ asset('assets/js/admin/categories/index.js') }}"></script>
 @endpush

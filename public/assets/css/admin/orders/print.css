@@ -1,0 +1,76 @@
+/* Sử dụng font DejaVu Sans để không bị lỗi font Tiếng Việt khi xuất PDF */
+body {
+    font-family: 'DejaVu Sans', sans-serif;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.header-table {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: right;
+    text-transform: uppercase;
+}
+
+.info-table {
+    margin-bottom: 30px;
+}
+
+.info-table td {
+    vertical-align: top;
+    width: 50%;
+}
+
+.box-title {
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.items-table th,
+.items-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.items-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.total-row {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.total-final {
+    font-weight: bold;
+    font-size: 16px;
+    color: #d93025;
+}
