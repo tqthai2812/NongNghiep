@@ -3,17 +3,19 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\AddToCartRequest;
 use App\Models\Cart;
 use App\Models\ProductPackage;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\UpdateCartQuantityRequest;
 
 class CartController extends Controller
 {
     public function index()
     {
+        $userId = Auth::id();
         $cartItems = Cart::with(['package.packageType.product.primaryImage'])
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->get();
 
         return view('user.cart', compact('cartItems'));
@@ -22,22 +24,19 @@ class CartController extends Controller
     /**
      * Cập nhật số lượng qua Ajax
      */
-    public function updateQuantity(Request $request)
+    public function updateQuantity(UpdateCartQuantityRequest $request)
     {
-        $request->validate([
-            'id' => 'required|exists:cart,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
-
-        $cartItem = Cart::where('id', $request->id)
-            ->where('user_id', Auth::id())
-            ->first();
+        $userId = request()->user()->id;
+        // Lấy item và kiểm tra quyền sở hữu ngay trong câu query
+        $cartItem = Cart::where('user_id', Auth::id())
+            ->with('package') // Eager load để tránh lỗi N+1 khi check stock
+            ->find($request->id);
 
         if (!$cartItem) {
             return response()->json(['message' => 'Không tìm thấy mục giỏ hàng'], 404);
         }
 
-        // Kiểm tra tồn kho trước khi cập nhật
+        // Kiểm tra tồn kho
         if ($cartItem->package->stock < $request->quantity) {
             return response()->json([
                 'message' => 'Số lượng vượt quá tồn kho còn lại!',
@@ -45,8 +44,7 @@ class CartController extends Controller
             ], 400);
         }
 
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
+        $cartItem->update(['quantity' => $request->quantity]);
 
         return response()->json([
             'status' => 'success',
@@ -71,43 +69,24 @@ class CartController extends Controller
         return response()->json(['message' => 'Có lỗi xảy ra'], 400);
     }
 
-    public function addToCart(Request $request)
+    public function addToCart(AddToCartRequest $request)
     {
-        // 1. Validate dữ liệu
-        $request->validate([
-            'package_id' => 'required|exists:product_packages,id',
-            'quantity'   => 'required|integer|min:1'
-        ]);
+        $package = ProductPackage::findOrFail($request->package_id);
 
-        $userId = Auth::id();
-        $packageId = $request->package_id;
-        $quantity = $request->quantity;
-
-        // 2. Kiểm tra tồn kho thực tế
-        $package = ProductPackage::findOrFail($packageId);
-        if ($package->stock < $quantity) {
+        if ($package->stock < $request->quantity) {
             return response()->json(['message' => 'Số lượng trong kho không đủ!'], 400);
         }
 
-        // 3. Xử lý giỏ hàng
-        $cartItem = Cart::where('user_id', $userId)
-            ->where('package_id', $packageId)
-            ->first();
 
-        if ($cartItem) {
-            // Nếu đã có, cộng dồn số lượng
-            $cartItem->increment('quantity', $quantity);
-        } else {
-            // Nếu chưa có, tạo mới
-            Cart::create([
-                'user_id'    => $userId,
-                'package_id' => $packageId,
-                'quantity'   => $quantity
-            ]);
-        }
+        $cartItem = Cart::firstOrCreate(
+            ['user_id' => Auth::id(), 'package_id' => $package->id],
+            ['quantity' => 0]
+        );
+        $cartItem->increment('quantity', $request->quantity);
+
 
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Đã thêm sản phẩm vào giỏ hàng thành công!'
         ]);
     }
