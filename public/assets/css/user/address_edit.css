@@ -8,13 +8,13 @@ body {
     box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
 }
 
-.btn-shopee {
+.bg-shopee {
     background-color: #ee4d2d;
     color: white;
     border: none;
 }
 
-.btn-shopee:hover {
+.bg-shopee:hover {
     background-color: #d73a1c;
     color: white;
 }

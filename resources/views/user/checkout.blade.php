@@ -2,78 +2,7 @@
 @section('title', 'Thanh toán đơn hàng')
 
 @push('page_specific_css')
-<style>
-    body {
-        background-color: #f5f5f5;
-    }
-
-    .text-shopee {
-        color: #ee4d2d;
-    }
-
-    .bg-shopee {
-        background-color: #ee4d2d;
-        color: white;
-        border: none;
-    }
-
-    .bg-shopee:hover {
-        background-color: #d73a1c;
-        color: white;
-    }
-
-    .address-border {
-        height: 3px;
-        width: 100%;
-        background-position-x: -30px;
-        background-size: 116px 3px;
-        background-image: repeating-linear-gradient(45deg, #6fa6d6, #6fa6d6 33px, transparent 0, transparent 41px, #f18d9b 0, #f18d9b 74px, transparent 0, transparent 82px);
-    }
-
-    .card-custom {
-        border: none;
-        border-radius: 3px;
-        box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
-        margin-bottom: 15px;
-    }
-
-    .payment-method-btn {
-        border: 1px solid #e0e0e0;
-        background: white;
-        color: #333;
-        padding: 8px 20px;
-        cursor: pointer;
-        border-radius: 2px;
-        margin-right: 10px;
-    }
-
-    .btn-check:checked+.payment-method-btn {
-        border-color: #ee4d2d;
-        color: #ee4d2d;
-        position: relative;
-    }
-
-    .btn-check:checked+.payment-method-btn::after {
-        content: "✓";
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background: #ee4d2d;
-        color: white;
-        font-size: 10px;
-        padding: 0 4px;
-        clip-path: polygon(100% 0, 0% 100%, 100% 100%);
-    }
-
-    /* Tùy chỉnh danh sách địa chỉ */
-    .address-item-radio:checked+label .address-content {
-        color: #333;
-    }
-
-    .address-item-radio:checked {
-        accent-color: #ee4d2d;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/user/checkout.css') }}">
 @endpush
 
 @section('content')
@@ -117,7 +46,7 @@
         <div class="row align-items-center mb-3">
             <div class="col-md-6 d-flex align-items-center">
                 @php
-                $primaryImage = $item->package->product->images->firstWhere('is_primary', true);
+                $primaryImage = $item->package->product->primaryImage;
                 $imgUrl = $primaryImage ? asset('storage/' . $primaryImage->image_url) : asset('assets/img/default.png');
                 @endphp
                 <img src="{{ $imgUrl }}" alt="Product" class="me-3 border rounded" style="width: 60px; height: 60px; object-fit: cover;">
@@ -253,147 +182,9 @@
     </div>
 </div>
 
-<div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title">Thêm địa chỉ mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="add-address-form" action="/user/addresses" method="POST">
-                    @csrf
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6"><input type="text" name="receiver_name" class="form-control" placeholder="Họ và tên" required></div>
-                        <div class="col-md-6"><input type="text" name="receiver_phone" class="form-control" placeholder="Số điện thoại" required></div>
-                    </div>
+@include('user.components.modal_address_add', ['title' => 'Thêm địa chỉ', 'backToList' => true])
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="addProvinceSelect" name="province_id" required>
-                                    <option selected disabled value="">Tỉnh/TP</option>
-                                </select>
-                                <label>Tỉnh/Thành phố</label>
-                            </div>
-                            <input type="hidden" name="province" id="addProvinceName">
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="addDistrictSelect" name="district_id" required disabled>
-                                    <option selected disabled value="">Quận/Huyện</option>
-                                </select>
-                                <label>Quận/Huyện</label>
-                            </div>
-                            <input type="hidden" name="district" id="addDistrictName">
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="addWardSelect" name="ward_id" required disabled>
-                                    <option selected disabled value="">Phường/Xã</option>
-                                </select>
-                                <label>Phường/Xã</label>
-                            </div>
-                            <input type="hidden" name="ward" id="addWardName">
-                        </div>
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <textarea class="form-control" name="address_detail" style="height: 80px" placeholder="Địa chỉ cụ thể" required></textarea>
-                        <label>Địa chỉ cụ thể (Số nhà, đường...)</label>
-                    </div>
-
-                    <div class="mb-3 d-flex align-items-center">
-                        <span class="me-3 text-muted">Loại địa chỉ:</span>
-                        <input type="radio" class="btn-check" name="address_type" id="addHome" value="home" checked>
-                        <label class="btn btn-outline-danger px-3 py-1 me-2" for="addHome">Nhà Riêng</label>
-                        <input type="radio" class="btn-check" name="address_type" id="addOffice" value="office">
-                        <label class="btn btn-outline-secondary px-3 py-1" for="addOffice">Văn Phòng</label>
-                    </div>
-
-                    <div class="form-check mb-4 mt-2">
-                        <input class="form-check-input" type="checkbox" name="is_default" id="addDefault" value="1" checked>
-                        <label class="form-check-label text-muted" for="addDefault">Đặt làm địa chỉ mặc định</label>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addressListModal">Trở Lại</button>
-                        <button type="submit" class="btn bg-shopee px-4">Hoàn thành</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="updateAddressModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title">Cập nhật địa chỉ</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="update-address-form" method="POST">
-                    @csrf
-                    @method('PUT') <input type="hidden" name="id" id="update_id">
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6"><input type="text" name="receiver_name" id="upd_name" class="form-control" required></div>
-                        <div class="col-md-6"><input type="text" name="receiver_phone" id="upd_phone" class="form-control" required></div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="updProvinceSelect" name="province_id" required></select>
-                                <label>Tỉnh/Thành phố</label>
-                            </div>
-                            <input type="hidden" name="province" id="updProvinceName">
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="updDistrictSelect" name="district_id" required></select>
-                                <label>Quận/Huyện</label>
-                            </div>
-                            <input type="hidden" name="district" id="updDistrictName">
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-floating">
-                                <select class="form-select" id="updWardSelect" name="ward_id" required></select>
-                                <label>Phường/Xã</label>
-                            </div>
-                            <input type="hidden" name="ward" id="updWardName">
-                        </div>
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <textarea class="form-control" name="address_detail" id="upd_detail" style="height: 80px" required></textarea>
-                        <label>Địa chỉ cụ thể</label>
-                    </div>
-
-                    <div class="mb-3 d-flex align-items-center">
-                        <span class="me-3 text-muted">Loại địa chỉ:</span>
-                        <input type="radio" class="btn-check" name="address_type" id="updHome" value="home">
-                        <label class="btn btn-outline-danger px-3 py-1 me-2" for="updHome">Nhà Riêng</label>
-                        <input type="radio" class="btn-check" name="address_type" id="updOffice" value="office">
-                        <label class="btn btn-outline-secondary px-3 py-1" for="updOffice">Văn Phòng</label>
-                    </div>
-
-                    <div class="form-check mb-4 mt-2">
-                        <input class="form-check-input" type="checkbox" name="is_default" id="updDefault" value="1">
-                        <label class="form-check-label text-muted" for="updDefault">Đặt làm địa chỉ mặc định</label>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addressListModal">Trở Lại</button>
-                        <button type="submit" class="btn bg-shopee px-4">Cập nhật</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+@include('user.components.modal_address_update', ['isCheckout' => true])
 
 @endsection
 

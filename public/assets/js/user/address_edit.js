@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 fetch(this.action, {
                     method: "POST",
                     headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "X-CSRF-TOKEN": window.addressConfig.csrfToken,
                         Accept: "application/json",
                     },
                     body: formData,
@@ -192,7 +192,7 @@ document.querySelectorAll(".btn-delete-address").forEach((btn) => {
         fetch(`/user/addresses/${addressId}`, {
             method: "DELETE",
             headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "X-CSRF-TOKEN": window.addressConfig.csrfToken,
                 Accept: "application/json",
             },
         })

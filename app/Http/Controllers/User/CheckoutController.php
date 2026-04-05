@@ -12,12 +12,12 @@ use App\Models\OrderItem;
 use App\Models\UserAddress;
 use App\Models\InventoryTransaction;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\PlaceOrderRequest;
 
 class CheckoutController extends Controller
 {
     public function index(Request $request)
     {
-        // Lấy mảng ID từ form giỏ hàng gửi sang (qua request POST)
         $cartIds = $request->input('cart_ids');
 
         if (!$cartIds || empty($cartIds)) {
@@ -26,9 +26,8 @@ class CheckoutController extends Controller
 
         $user = Auth::user();
 
-        // Chỉ lấy ra các item trong giỏ hàng có ID nằm trong mảng $cartIds
-        // Đi kèm eager loading theo sơ đồ database bạn cung cấp
-        $selectedItems = Cart::with(['package.packageType.product.images', 'package.packageType'])
+        // Chỉ lấy ra các item trong giỏ hàng có ID nằm trong mảng $cartIds và thuộc về user hiện tại
+        $selectedItems = Cart::with(['package.packageType.product.primaryImage', 'package.packageType'])
             ->where('user_id', $user->id)
             ->whereIn('id', $cartIds)
             ->get();
@@ -44,15 +43,8 @@ class CheckoutController extends Controller
         return view('user.checkout', compact('selectedItems', 'addresses', 'totalAmount', 'shippingFee'));
     }
 
-    public function placeOrder(Request $request)
+    public function placeOrder(PlaceOrderRequest $request)
     {
-        // 1. Validate dữ liệu gửi lên từ giao diện Checkout
-        $request->validate([
-            'cart_ids'   => 'required|array',
-            'cart_ids.*' => 'exists:cart,id',
-            'address_id' => 'required|exists:user_addresses,id',
-        ]);
-
         $user = Auth::user();
         $cartIds = $request->cart_ids;
 
@@ -120,7 +112,7 @@ class CheckoutController extends Controller
                     'package_id' => $item->package_id,
                     'user_id'    => $user->id, // Người tạo giao dịch (ở đây là khách mua)
                     'type'       => 'out',     // Xuất kho
-                    'quantity'   => -$item->quantity, // Số lượng âm
+                    'quantity'   => $item->quantity, // Số lượng âm
                     'reason'     => 'Khách hàng đặt đơn #' . $order->id
                 ]);
             }
@@ -132,7 +124,7 @@ class CheckoutController extends Controller
             DB::commit();
 
             // Thành công thì chuyển hướng về trang thông báo hoặc lịch sử đơn hàng
-            return redirect()->route('order.success', ['id' => $order->id])->with('success', 'Đặt hàng thành công!');
+            return redirect()->route('cart.index')->with('success', 'Đặt hàng thành công!');
         } catch (\Exception $e) {
             // Nếu có lỗi ở bất kỳ bước nào, rollback toàn bộ
             DB::rollBack();

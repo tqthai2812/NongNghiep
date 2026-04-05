@@ -1,8 +1,10 @@
-<div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
+@props(['id' => 'addressModal', 'title' => 'Thêm địa chỉ mới', 'backToList' => false])
+
+<div class="modal fade" id="{{ $id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title">Thêm địa chỉ mới</h5>
+                <h5 class="modal-title">{{ $title }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -62,8 +64,15 @@
                     </div>
 
                     <div class="d-flex justify-content-end mt-3">
+                        @if($backToList)
+                        {{-- Trường hợp 1: Quay lại danh sách Modal cũ --}}
+                        <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addressListModal">Trở Lại</button>
+                        @else
+                        {{-- Trường hợp 2: Chỉ đóng Modal --}}
                         <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Trở Lại</button>
-                        <button type="submit" class="btn btn-shopee px-4">Hoàn thành</button>
+                        @endif
+
+                        <button type="submit" class="btn bg-shopee px-4 text-white">Hoàn thành</button>
                     </div>
                 </form>
             </div>

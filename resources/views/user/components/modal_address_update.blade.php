@@ -12,8 +12,12 @@
                     <input type="hidden" name="id" id="update_id">
 
                     <div class="row g-3 mb-3">
-                        <div class="col-md-6"><input type="text" name="receiver_name" id="upd_name" class="form-control" required></div>
-                        <div class="col-md-6"><input type="text" name="receiver_phone" id="upd_phone" class="form-control" required></div>
+                        <div class="col-md-6">
+                            <input type="text" name="receiver_name" id="upd_name" class="form-control" placeholder="Họ và tên" required>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="receiver_phone" id="upd_phone" class="form-control" placeholder="Số điện thoại" required>
+                        </div>
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -41,7 +45,7 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        <textarea class="form-control" name="address_detail" id="upd_detail" style="height: 80px" required></textarea>
+                        <textarea class="form-control" name="address_detail" id="upd_detail" style="height: 80px" placeholder="Địa chỉ cụ thể" required></textarea>
                         <label>Địa chỉ cụ thể</label>
                     </div>
 
@@ -59,8 +63,14 @@
                     </div>
 
                     <div class="d-flex justify-content-end mt-3">
+                        {{-- Kiểm tra nếu là trang Checkout thì quay lại Modal danh sách, ngược lại thì đóng --}}
+                        @if($isCheckout ?? false)
+                        <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#addressListModal">Trở Lại</button>
+                        @else
                         <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Trở Lại</button>
-                        <button type="submit" class="btn btn-shopee px-4">Cập nhật</button>
+                        @endif
+
+                        <button type="submit" class="btn bg-shopee px-4">Cập nhật</button>
                     </div>
                 </form>
             </div>

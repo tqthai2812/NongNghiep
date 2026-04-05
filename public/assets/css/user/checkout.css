@@ -1,0 +1,71 @@
+body {
+    background-color: #f5f5f5;
+}
+
+.text-shopee {
+    color: #ee4d2d;
+}
+
+.bg-shopee {
+    background-color: #ee4d2d;
+    color: white;
+    border: none;
+}
+
+.bg-shopee:hover {
+    background-color: #d73a1c;
+    color: white;
+}
+
+.address-border {
+    height: 3px;
+    width: 100%;
+    background-position-x: -30px;
+    background-size: 116px 3px;
+    background-image: repeating-linear-gradient(45deg, #6fa6d6, #6fa6d6 33px, transparent 0, transparent 41px, #f18d9b 0, #f18d9b 74px, transparent 0, transparent 82px);
+}
+
+.card-custom {
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+    margin-bottom: 15px;
+}
+
+.payment-method-btn {
+    border: 1px solid #e0e0e0;
+    background: white;
+    color: #333;
+    padding: 8px 20px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-right: 10px;
+}
+
+.btn-check:checked+.payment-method-btn {
+    border-color: #ee4d2d;
+    color: #ee4d2d;
+    position: relative;
+}
+
+.btn-check:checked+.payment-method-btn::after {
+    content: "✓";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #ee4d2d;
+    color: white;
+    font-size: 10px;
+    padding: 0 4px;
+    clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+}
+
+/* Tùy chỉnh danh sách địa chỉ */
+.address-item-radio:checked+label .address-content {
+    color: #333;
+}
+
+.address-item-radio:checked {
+    accent-color: #ee4d2d;
+}
+

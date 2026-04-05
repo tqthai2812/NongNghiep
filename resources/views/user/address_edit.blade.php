@@ -16,7 +16,7 @@
                 <div class="card card-custom">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center p-4 border-bottom">
                         <h5 class="mb-0 fw-normal fs-5">Địa chỉ của tôi</h5>
-                        <button class="btn btn-shopee px-3" data-bs-toggle="modal" data-bs-target="#addressModal">
+                        <button class="btn bg-shopee px-3" data-bs-toggle="modal" data-bs-target="#addressModal">
                             <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
                         </button>
                     </div>
@@ -62,12 +62,21 @@
         </div>
     </div>
 
-    @include('user.components.modal_address_add')
+    @include('user.components.modal_address_add', [
+    'id' => 'addressModal',
+    'title' => 'Thêm địa chỉ nhận hàng',
+    'backToList' => false {{-- Hoặc true tùy vào logic bạn muốn --}}
+    ])
 
-    @include('user.components.modal_address_update')
+    @include('user.components.modal_address_update', ['isCheckout' => false])
 
 </div>
 @endsection
 @push('page_specific_js')
+<script>
+    window.addressConfig = {
+        csrfToken: '{{ csrf_token() }}',
+    }
+</script>
 <script src="{{ asset('assets/js/user/address_edit.js') }}"></script>
 @endpush
